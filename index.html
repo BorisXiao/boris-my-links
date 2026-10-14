@@ -2229,6 +2229,43 @@
     cards = cards.filter(function (c) { return c.cat !== pinnedCat; });
   }
 
+  /* Hero 进场编排。
+     注意：hero 的标题/副标题/统计都带 .reveal（初始 opacity:0），
+     必须有人在合适时机加 .in，否则整块内容永远不可见。 */
+  function revealHero() {
+    var els = document.querySelectorAll(".hero .reveal");
+    if (reduceMotion) {
+      els.forEach(function (el) { el.classList.add("in"); });
+      return;
+    }
+    els.forEach(function (el, i) {
+      setTimeout(function () { el.classList.add("in"); }, 70 + i * 105);
+    });
+  }
+
+  /* 通用兜底：任何带 .reveal 却迟迟没拿到 .in 的元素，一律强制显示。
+     宁可牺牲动画，也绝不让内容不可见 —— 这类故障肉眼极难发现。
+     单次定时器不够：若分组渲染晚于兜底时刻，就再没人救它。
+     因此用 MutationObserver 持续守望，新出现的 .reveal 也会被纳入。 */
+  function forceRevealAll() {
+    document.querySelectorAll(".reveal:not(.in)").forEach(function (el) { el.classList.add("in"); });
+  }
+  /* 多次兜底 + 轻量轮询。
+     不用 MutationObserver：它只在 DOM 变化时触发，而「元素已存在但丢了 .in」
+     这种状态变化它看不到。轮询虽朴素，但真能兜住。
+     只救「已经在视口附近却仍不可见」的元素，避免抢掉正常的滚动进场动画。 */
+  function healReveal() {
+    document.querySelectorAll(".reveal:not(.in)").forEach(function (el) {
+      var r = el.getBoundingClientRect();
+      if (r.top < window.innerHeight * 1.2) el.classList.add("in");
+    });
+  }
+  setTimeout(healReveal, 1500);
+  window.addEventListener("load", function () { setTimeout(healReveal, 700); });
+  [2.5, 4, 6, 9, 13].forEach(function (t) { setTimeout(healReveal, t * 1000); });
+  document.addEventListener("visibilitychange", healReveal);
+  window.addEventListener("resize", healReveal);
+
   function animateSection(grid, ci) {
     if (reduceMotion) {
       grid.querySelectorAll(".card").forEach(function (c) { c.classList.add("in"); });
@@ -2799,6 +2836,7 @@
   loadUI();
   loadGH();
   setView(UI.view);
+  revealHero();
   updateGhBadge();
   document.body.classList.toggle("has-local", !!loadLocal());
 
