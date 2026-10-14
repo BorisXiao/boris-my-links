@@ -820,15 +820,6 @@
   .view-toggle button[aria-pressed="true"] { background: var(--card); color: var(--t1); box-shadow: var(--sh-1); }
 
   /* 紧凑列表模式：一屏看更多 */
-  body.view-list .grid { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 7px; }
-  body.view-list .card { padding: 9px 14px 9px 12px; border-radius: 12px; }
-  body.view-list .avatar { width: 26px; height: 26px; border-radius: 8px; }
-  body.view-list .avatar img { width: 16px; height: 16px; }
-  body.view-list .avatar .fb { font-size: 12px; }
-  body.view-list .info .d { display: none; }
-  body.view-list .info .t { font-size: 14px; }
-  body.view-list .star { top: 50%; translate: 0 -50%; right: 44px; }
-
   /* 卡片上移 / 下移（触屏排序用，因为 HTML5 拖拽在触屏不可靠） */
   .nudge { display: none; flex-direction: column; gap: 0; }
   body.editing .nudge { display: flex; }
@@ -935,6 +926,85 @@
   @media (prefers-reduced-motion: reduce) {
     .star, .fab, .locator { transition: none !important; }
   }
+
+  /* ══════════════════════════════════════════════════════════
+     视图密度（三档：列表 / 网格 / 舒展）
+     ══════════════════════════════════════════════════════════ */
+  /* 网格：默认即标准网格，无需额外规则 */
+  body.view-list .grid { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 7px; }
+  body.view-list .card { padding: 9px 14px 9px 12px; border-radius: 12px; }
+  body.view-list .avatar { width: 26px; height: 26px; border-radius: 8px; }
+  body.view-list .avatar img { width: 16px; height: 16px; }
+  body.view-list .avatar .fb { font-size: 12px; }
+  body.view-list .info .d { display: none; }
+  body.view-list .info .t { font-size: 14px; }
+  body.view-list .star { top: 50%; translate: 0 -50%; right: 44px; }
+
+  body.view-cozy .grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 18px; }
+  body.view-cozy .card { padding: 18px 20px 18px 17px; border-radius: 20px; }
+  body.view-cozy .avatar { width: 46px; height: 46px; border-radius: 13px; }
+  body.view-cozy .avatar img { width: 27px; height: 27px; }
+  body.view-cozy .info .t { font-size: 16px; }
+  body.view-cozy .info .d { font-size: 13px; }
+
+  /* ══════════════════════════════════════════════════════════
+     操作历史（撤销）
+     ══════════════════════════════════════════════════════════ */
+  .undo-btn {
+    position: relative; flex: none;
+    display: none; align-items: center; gap: 5px;
+    height: 32px; padding: 0 11px;
+    font-size: 12.5px; font-weight: 520;
+    color: var(--t2);
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: var(--r-pill); cursor: pointer; white-space: nowrap;
+    transition: color var(--fast), border-color var(--fast), scale var(--fast) var(--e-spring);
+  }
+  .undo-btn.show { display: inline-flex; }
+  .undo-btn:hover { color: var(--t1); border-color: var(--line-strong); }
+  .undo-btn:active { scale: .95; }
+  .undo-btn svg { width: 13px; height: 13px; }
+
+  /* ══════════════════════════════════════════════════════════
+     首次访问引导
+     ══════════════════════════════════════════════════════════ */
+  .onboard {
+    display: none;
+    max-width: var(--maxw); margin: 0 auto; padding: 0 26px;
+  }
+  .onboard.show { display: block; animation: fadeUp .5s var(--e-out) both; }
+  .onboard-inner {
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    padding: 13px 16px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    box-shadow: var(--sh-1);
+  }
+  .onboard-inner .txt { font-size: 13.5px; color: var(--t2); line-height: 1.6; }
+  .onboard-inner .txt b { color: var(--t1); font-weight: 600; }
+  .onboard-inner kbd {
+    font: inherit; font-size: 11.5px; padding: 1px 5px;
+    background: var(--line); border-radius: 4px; color: var(--t1);
+  }
+  .onboard-close { margin-left: auto; flex: none; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* 读屏专用：视觉上不可见，但会被朗读 */
+  .sr-only {
+    position: absolute; width: 1px; height: 1px;
+    padding: 0; margin: -1px; overflow: hidden;
+    clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; border: 0;
+  }
+
+  @media (max-width: 760px) {
+    .undo-btn .lbl { display: none; }
+    .onboard-inner { gap: 10px; }
+  }
+
 </style>
 </head>
 <body>
@@ -954,19 +1024,31 @@
         <button class="clear" id="clear" type="button" aria-label="清空搜索">&times;</button>
       </div>
 
-      <div class="view-toggle" id="viewToggle" role="group" aria-label="切换视图">
-        <button type="button" id="viewGrid" aria-pressed="true" title="网格视图" aria-label="网格视图">
+      <div class="view-toggle" id="viewToggle" role="group" aria-label="切换视图密度">
+        <button type="button" id="viewList" aria-pressed="false" title="紧凑列表：一屏看最多" aria-label="紧凑列表视图">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M4 6h16M4 12h16M4 18h16"/>
+          </svg>
+        </button>
+        <button type="button" id="viewGrid" aria-pressed="true" title="标准网格" aria-label="标准网格视图">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
             <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>
             <rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>
           </svg>
         </button>
-        <button type="button" id="viewList" aria-pressed="false" title="紧凑列表" aria-label="紧凑列表">
+        <button type="button" id="viewCozy" aria-pressed="false" title="舒展：卡片更大更清晰" aria-label="舒展视图">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-            <path d="M4 6h16M4 12h16M4 18h16"/>
+            <rect x="3" y="3" width="18" height="8" rx="2"/><rect x="3" y="13" width="18" height="8" rx="2"/>
           </svg>
         </button>
       </div>
+
+      <button class="undo-btn" id="undoBtn" type="button" title="撤销上一步（Ctrl/Cmd+Z）">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/>
+        </svg>
+        <span class="lbl">撤销</span>
+      </button>
 
       <button class="gh-badge" id="ghBadge" type="button" title="GitHub 连接状态">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1015,6 +1097,16 @@
   </div>
 </header>
 
+<div class="onboard" id="onboard" role="region" aria-label="使用提示">
+  <div class="onboard-inner">
+    <span class="txt" id="onboardText"></span>
+    <button class="btn ghost onboard-close" id="onboardClose" type="button">知道了</button>
+  </div>
+</div>
+
+<!-- 读屏播报：动态变化让辅助技术能感知 -->
+<div class="sr-only" id="live" role="status" aria-live="polite" aria-atomic="true"></div>
+
 <div class="dirty" id="dirty">
   <div class="dirty-inner">
     <span id="dirtyText">当前显示的是<strong>本机编辑</strong>的内容，与线上 <code>links.json</code> 不一致。</span>
@@ -1026,6 +1118,10 @@
       <button class="btn" id="btnExport2" type="button">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
         导出
+      </button>
+      <button class="btn" id="btnImport" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V9M7 14l5-5 5 5M5 3h14"/></svg>
+        导入
       </button>
       <button class="btn ghost" id="btnReset2" type="button">恢复线上</button>
     </span>
@@ -1076,7 +1172,7 @@
   </div>
 </div>
 
-<div class="toast-wrap" id="toasts"></div>
+<div class="toast-wrap" id="toasts" role="status" aria-live="polite" aria-atomic="false"></div>
 
 <footer>
   <span id="footCount"></span>
@@ -1190,6 +1286,9 @@
   var GH = { token: "", method: "", login: "" };                // GitHub 连接
 
   var editing = false;
+  /* 编辑历史：每次数据变更前压入一份快照，用于撤销 */
+  var history = [];
+  var HISTORY_MAX = 40;
   var activeCat = "all";
   var query = "";
   var cards = [];
@@ -1240,6 +1339,9 @@
   function dropLocal() {
     safeDel(localStorage, K_DATA);
     safeDel(localStorage, K_UI);
+    /* 必须同步移除提示条状态：否则「恢复线上」后仍显示"本机改动尚未提交"，
+       而此时本机已无改动 —— 提示与实际状态不符 */
+    document.body.classList.remove("has-local");
   }
   function loadGH() {
     var raw = safeGet(localStorage, K_GH);
@@ -1298,6 +1400,18 @@
       }).catch(function () {});
     } else apply();
   });
+
+  /* ══════════════════════════════════════════════════════════════
+     读屏播报：动态变化（搜索结果数、收藏、撤销）让辅助技术能感知
+     ══════════════════════════════════════════════════════════════ */
+  var liveEl = $("live"), liveTimer = null;
+  function announce(msg) {
+    if (!liveEl || !msg) return;
+    /* 先清空再写入，确保相同文本也会被重新朗读 */
+    liveEl.textContent = "";
+    clearTimeout(liveTimer);
+    liveTimer = setTimeout(function () { liveEl.textContent = msg; }, 60);
+  }
 
   /* ══════════════════════════════════════════════════════════════
      轻提示
@@ -1417,8 +1531,10 @@
           var label = link.name || link.url;
           closeModal();
           askConfirm("删除站点", "确定删除「" + label + "」？此操作只影响本机编辑内容。", "删除", function () {
+            pushHistory("删除「" + label + "」");
             cat.links.splice(idx, 1);
-            persist(); render(); toast("已删除「" + label + "」");
+            persist(); render(); updateDirtyBar();
+            toast("已删除「" + label + "」");
           });
         });
         foot.appendChild(del);
@@ -1432,6 +1548,7 @@
         if (!/^https?:\/\/[^\s]+$/i.test(url)) { fUrl.wrap.classList.add("bad"); fUrl.input.focus(); return; }
         fUrl.wrap.classList.remove("bad");
         var tags = fTags.input.value.split(/[,，]/).map(function (s) { return s.trim(); }).filter(Boolean);
+        pushHistory(idx >= 0 ? "修改「" + name + "」" : "添加「" + name + "」");
         if (idx >= 0) {
           link.name = name; link.url = url; link.desc = fDesc.input.value.trim();
           if (tags.length) link.tags = tags; else delete link.tags;
@@ -1444,7 +1561,7 @@
           cat.links.push(item);
           toast("已添加「" + name + "」");
         }
-        persist(); closeModal(); render();
+        closeModal(); persist(); render(); updateDirtyBar();
       });
       foot.appendChild(save);
     });
@@ -1474,7 +1591,7 @@
           if (UI.starred.length) { /* 收藏是按 url 记录，分类改名无需迁移 */ }
           toast("已重命名");
         }
-        persist(); closeModal(); render();
+        closeModal(); persist(); render(); updateDirtyBar();
       });
       foot.appendChild(save);
     });
@@ -1580,7 +1697,7 @@
           if (it.desc) o.desc = it.desc;
           cat.links.push(o);
         });
-        persist(); closeModal(); render();
+        closeModal(); persist(); render(); updateDirtyBar();
         toast("已批量添加 " + items.length + " 个站点");
       });
       foot.appendChild(add);
@@ -2000,6 +2117,7 @@
       refreshCounts();
       var on = isStarred(link.url);
       toast(on ? "已收藏「" + (link.name || host) + "」" : "已取消收藏");
+      announce(on ? "已收藏 " + (link.name || host) : "已取消收藏 " + (link.name || host));
     });
     a.appendChild(star);
 
@@ -2029,9 +2147,10 @@
         if (!c) return;
         var to = idx + dir;
         if (to < 0 || to >= c.links.length) return;
+        pushHistory("移动「" + (c.links[idx].name || "") + "」");
         var m = c.links.splice(idx, 1)[0];
         c.links.splice(to, 0, m);
-        persist(); render();
+        persist(); render(); updateDirtyBar();
       }
       bUp.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); move(-1); });
       bDown.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); move(1); });
@@ -2052,9 +2171,11 @@
         askConfirm("删除站点", "确定删除「" + label + "」？此操作只影响本机编辑内容。", "删除", function () {
           var c = catByName(catName);
           if (!c) return;
+          pushHistory("删除「" + label + "」");
           var i = c.links.indexOf(link);
           if (i > -1) c.links.splice(i, 1);
-          persist(); render(); toast("已删除「" + label + "」");
+          persist(); render(); updateDirtyBar();
+          toast("已删除「" + label + "」");
         });
       });
     } else {
@@ -2115,6 +2236,53 @@
     return { sec: sec, grid: grid };
   }
 
+  /* 所有数据变更统一走这里：先记录快照，再持久化与重渲染 */
+  function act(label) {
+    pushHistory(label);
+    persist();
+    render();
+    updateDirtyBar();
+  }
+
+  /* 撤销实现：把快照写回 DATA → 持久化 → 重渲染。
+     记录期间会暂停新快照入栈（直接对 DATA 赋值，不走 pushHistory）。 */
+  function pushHistory(label) {
+    try {
+      var snap = JSON.stringify(DATA);
+      if (history.length && history[history.length - 1].snap === snap) return;
+      history.push({ snap: snap, label: label || "编辑" });
+      if (history.length > HISTORY_MAX) history.shift();
+      updateUndoBtn();
+    } catch (e) {}
+  }
+  function undo() {
+    if (!history.length) return;
+    var prev = history.pop();
+    try {
+      DATA = JSON.parse(prev.snap);
+    } catch (e) { return; }
+    persist();
+    closeModalQuiet();
+    render();
+    updateDirtyBar();
+    updateUndoBtn();
+    /* 线上数据本就干净时，撤销回该状态就不该再标"有本机改动" */
+    if (JSON.stringify(DATA) === JSON.stringify(BASE)) {
+      safeDel(localStorage, K_DATA);
+      document.body.classList.remove("has-local");
+    }
+    toast("已撤销：" + prev.label);
+    announce("已撤销 " + prev.label);
+  }
+  function closeModalQuiet() { if (modalOpen) closeModal(); }
+  function updateUndoBtn() {
+    var b = $("undoBtn");
+    if (!b) return;
+    b.classList.toggle("show", history.length > 0);
+    var lbl = b.querySelector(".lbl");
+    if (lbl) lbl.textContent = history.length ? ("撤销" + (history.length > 1 ? " (" + history.length + ")" : "")) : "撤销";
+  }
+
   function render() {
     var skel = $("skeleton");
     if (skel) skel.remove();
@@ -2168,9 +2336,11 @@
         var bRemove = btn("删除", "ghost danger", PATH.trash);
         bRemove.addEventListener("click", function () {
           askConfirm("删除分类", "删除「" + cat.name + "」及其 " + cat.links.length + " 个站点？", "删除", function () {
+            pushHistory("删除分类「" + cat.name + "」");
             DATA.categories.splice(ci, 1);
             if (activeCat === cat.name) activeCat = "all";
-            persist(); render(); toast("已删除分类「" + cat.name + "」");
+            persist(); render(); updateDirtyBar();
+            toast("已删除分类「" + cat.name + "」");
           });
         });
         actions.appendChild(bAdd); actions.appendChild(bBatch);
@@ -2436,7 +2606,18 @@
     }
     searchbox.classList.toggle("has-value", String(q).length > 0);
     updateFilterFade();
+
+    /* 读屏播报：只在结果数真的变化时播报，避免打字过程中噪音 */
+    if (q) {
+      if (visible !== lastAnnouncedCount) {
+        lastAnnouncedCount = visible;
+        announce(visible ? "找到 " + visible + " 个站点" : "没有匹配的站点");
+      }
+    } else {
+      lastAnnouncedCount = visible;
+    }
   }
+  var lastAnnouncedCount = -1;
   function pinShowIsVisible(pin) { return pin && pin.style.display !== "none"; }
 
   function updateFilterFade() {
@@ -2531,6 +2712,10 @@
 
     /* 全局快捷键 */
     if (e.key === "/") { e.preventDefault(); qEl.focus(); qEl.select(); return; }
+    /* Ctrl/Cmd+Z 撤销；Ctrl/Cmd+Shift+Z 也走撤销（不做重做，保持简单） */
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z" && !modalOpen) {
+      e.preventDefault(); undo(); return;
+    }
     if (inNavState()) {
       var k = e.key.toLowerCase();
       if (k === "g") { e.preventDefault(); openJump(); return; }
@@ -2663,14 +2848,23 @@
   /* ══════════════════════════════════════════════════════════════
      视图切换
      ══════════════════════════════════════════════════════════════ */
+  var VIEWS = ["list", "grid", "cozy"];
+  var VIEW_LABEL = { list: "紧凑列表", grid: "标准网格", cozy: "舒展" };
   function setView(v) {
+    if (VIEWS.indexOf(v) === -1) v = "grid";
     UI.view = v; saveUI();
     document.body.classList.toggle("view-list", v === "list");
-    $("viewGrid").setAttribute("aria-pressed", String(v === "grid"));
-    $("viewList").setAttribute("aria-pressed", String(v === "list"));
+    document.body.classList.toggle("view-cozy", v === "cozy");
+    VIEWS.forEach(function (k) {
+      var btn = $("view" + k.charAt(0).toUpperCase() + k.slice(1));
+      if (btn) btn.setAttribute("aria-pressed", String(v === k));
+    });
   }
-  $("viewGrid").addEventListener("click", function () { setView("grid"); });
-  $("viewList").addEventListener("click", function () { setView("list"); });
+  VIEWS.forEach(function (k) {
+    var btn = $("view" + k.charAt(0).toUpperCase() + k.slice(1));
+    if (btn) btn.addEventListener("click", function () { setView(k); announce("视图：" + VIEW_LABEL[k]); });
+  });
+  $("undoBtn").addEventListener("click", undo);
 
   /* ══════════════════════════════════════════════════════════════
      编辑模式
@@ -2729,6 +2923,108 @@
   $("btnPush").addEventListener("click", function () { pushToGitHub(); });
 
   /* ══════════════════════════════════════════════════════════════
+     导入：从 links.json 恢复数据与收藏（换设备时用）
+     ══════════════════════════════════════════════════════════════ */
+  function applyImport(obj) {
+    if (!obj || !Array.isArray(obj.categories)) throw new Error("文件格式不对：缺少 categories 数组");
+    var bad = obj.categories.filter(function (c) { return !c || typeof c.name !== "string" || !Array.isArray(c.links); });
+    if (bad.length) throw new Error("有 " + bad.length + " 个分类缺少 name 或 links 字段");
+    var cnt = obj.categories.reduce(function (a, c) { return a + c.links.length; }, 0);
+    pushHistory("导入数据");
+    DATA = {
+      title: obj.title || "壹页",
+      subtitle: obj.subtitle || "",
+      categories: obj.categories
+    };
+    if (Array.isArray(obj.starred)) { UI.starred = obj.starred.slice(); saveUI(); }
+    persist(); render(); updateDirtyBar();
+    toast("已导入 " + cnt + " 个站点" + (Array.isArray(obj.starred) ? "、" + obj.starred.length + " 个收藏" : ""));
+    announce("已导入 " + cnt + " 个站点");
+  }
+  function openImportModal() {
+    openModal("导入 links.json", function (body, foot) {
+      body.appendChild(modalNote(
+        "用于换设备：把导出的 <code>links.json</code> 导进来，站点与收藏一并恢复。<br>" +
+        "导入后会覆盖当前内容（可用「撤销」回退）。"));
+      var fileBtn = mk("label", "btn");
+      fileBtn.style.cursor = "pointer";
+      fileBtn.appendChild(svgIcon(PATH.upload));
+      fileBtn.appendChild(mk("span", null, "选择文件"));
+      var fi = mk("input");
+      fi.type = "file"; fi.accept = ".json,application/json";
+      fi.style.display = "none";
+      fileBtn.setAttribute("for", "importFile");
+      fi.id = "importFile";
+      body.appendChild(fileBtn);
+      body.appendChild(fi);
+
+      var f = mk("div", "field");
+      f.style.marginTop = "14px";
+      f.appendChild(mk("label", null, "或直接粘贴 JSON 内容"));
+      var ta = mk("textarea");
+      ta.rows = 7;
+      ta.style.cssText = "width:100%;padding:10px 12px;background:var(--card);border:1px solid var(--line);" +
+                         "border-radius:9px;outline:none;resize:vertical;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px";
+      ta.placeholder = '{ "title": "壹页", "categories": [ ... ] }';
+      f.appendChild(ta);
+      body.appendChild(f);
+      var err = mk("div", "hint");
+      err.style.color = "var(--danger)";
+      body.appendChild(err);
+
+      function doImport(text) {
+        err.textContent = "";
+        try {
+          applyImport(JSON.parse(text));
+          closeModal();
+        } catch (e) {
+          err.textContent = "导入失败：" + (e.message || "内容不是合法 JSON");
+        }
+      }
+      fi.addEventListener("change", function () {
+        var file = fi.files && fi.files[0];
+        if (!file) return;
+        var r = new FileReader();
+        r.onload = function () { doImport(String(r.result)); };
+        r.onerror = function () { err.textContent = "读取文件失败"; };
+        r.readAsText(file, "utf-8");
+      });
+      var okb = btn("导入", "primary", PATH.download);
+      okb.addEventListener("click", function () { doImport(ta.value); });
+      foot.appendChild(okb);
+    }, { wide: true });
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     首次访问引导（只显示一次，之后不再打扰）
+     ══════════════════════════════════════════════════════════════ */
+  var K_SEEN = "links-seen-v1";
+  function maybeOnboard() {
+    if (safeGet(localStorage, K_SEEN)) return;
+    $("onboardText").innerHTML =
+      "按 <kbd>/</kbd> 搜索 · 方向键浏览 · <b>卡片右上角星标</b>可收藏置顶 · " +
+      "点右上角<b>「编辑」</b>可增删改 · 连上 GitHub 后能一键提交到线上";
+    $("onboard").classList.add("show");
+  }
+  $("onboardClose").addEventListener("click", function () {
+    safeSet(localStorage, K_SEEN, "1");
+    $("onboard").classList.remove("show");
+  });
+
+  /* ══════════════════════════════════════════════════════════════
+     离线可用：Service Worker（仅 http(s)，本地 file:// 不注册）
+     ══════════════════════════════════════════════════════════════ */
+  function registerSW() {
+    if (!("serviceWorker" in navigator)) return;
+    if (location.protocol !== "http:" && location.protocol !== "https:") return;
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("sw.js").catch(function () {
+        /* 注册失败不影响正常使用（例如某些隐私模式） */
+      });
+    });
+  }
+
+  /* ══════════════════════════════════════════════════════════════
      导出 / 恢复
      ══════════════════════════════════════════════════════════════ */
   function exportPayload() {
@@ -2746,6 +3042,7 @@
     toast(UI.starred.length ? "已导出（含 " + UI.starred.length + " 个收藏）" : "已导出 links.json");
   }
   $("btnExport2").addEventListener("click", exportJSON);
+  $("btnImport").addEventListener("click", openImportModal);
   $("btnReset2").addEventListener("click", function () {
     askConfirm("恢复线上版本", "将丢弃本机的编辑内容与偏好设置，恢复为线上 links.json。", "恢复", function () {
       dropLocal();
@@ -2807,9 +3104,11 @@
         var names = DATA.categories.map(function (c) { return c.name; });
         var from = names.indexOf(dragSec.dataset.cat), to = names.indexOf(targetSec.dataset.cat);
         if (from > -1 && to > -1) {
+          pushHistory("调整「" + DATA.categories[from].name + "」位置");
           var moved = DATA.categories.splice(from, 1)[0];
           DATA.categories.splice(to, 0, moved);
-          persist(); render(); toast("已调整「" + moved.name + "」的位置");
+          persist(); render(); updateDirtyBar();
+          toast("已调整「" + moved.name + "」的位置");
         }
       }
       return;
@@ -2825,11 +3124,13 @@
     if (fromIdx < 0 || toIdx < 0) return;
     var rect = t.getBoundingClientRect();
     var after = e.clientX >= rect.left + rect.width / 2;
+    pushHistory("移动「" + (fromCat.links[fromIdx].name || "") + "」");
     var movedLink = fromCat.links.splice(fromIdx, 1)[0];
     var insertAt = toIdx + (after ? 1 : 0);
     if (fromCat === toCat && fromIdx < insertAt) insertAt--;
     toCat.links.splice(Math.max(insertAt, 0), 0, movedLink);
-    persist(); render(); toast("已移动「" + (movedLink.name || movedLink.url) + "」");
+    persist(); render(); updateDirtyBar();
+    toast("已移动「" + (movedLink.name || movedLink.url) + "」");
   });
 
   /* ══════════════════════════════════════════════════════════════
@@ -2846,6 +3147,9 @@
   loadGH();
   setView(UI.view);
   revealHero();
+  maybeOnboard();
+  registerSW();
+  updateUndoBtn();
   updateGhBadge();
   document.body.classList.toggle("has-local", !!loadLocal());
 
@@ -2876,8 +3180,10 @@
   }
 
   /* OAuth 回调优先处理（会清掉 URL 里的 code） */
-  handleOAuthCallback().then(function (handled) {
-    fetch("links.json", { cache: "no-cache" })
+  Promise.resolve()
+    .then(handleOAuthCallback)
+    .catch(function () { /* 授权流程出错不应阻断页面加载 */ })
+    .then(function () { return fetch("links.json", { cache: "no-cache" }); })
       .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
       .then(function (json) {
         applyData((json && Array.isArray(json.categories)) ? json : { title: "壹页", subtitle: "", categories: [] });
@@ -2897,7 +3203,6 @@
           '<h3>数据加载失败</h3><p>无法读取 <code>links.json</code>（' + esc(err.message) + '）。<br>' +
           '若你是直接双击打开 HTML 文件，请改用本地服务器预览；也可以点右上角「编辑」从零添加站点。</p></div>';
       });
-  });
 
   /* 供自动化测试使用 */
   window.__page = {

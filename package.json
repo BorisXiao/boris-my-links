@@ -1,0 +1,13 @@
+{
+  "name": "yiyi",
+  "version": "1.0.0",
+  "private": true,
+  "description": "壹页 · 个人常用网址导航页（零构建、零依赖）",
+  "scripts": {
+    "test": "node tests/run.mjs",
+    "preview": "python3 -m http.server 8765",
+    "serve": "python3 -m http.server 8765"
+  },
+  "keywords": ["bookmarks", "startpage", "github-pages", "zero-build"],
+  "license": "MIT"
+}
