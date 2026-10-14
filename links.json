@@ -1,100 +1,105 @@
 {
-  "title": "常用网址",
-  "subtitle": "把每天要打开的站点放在一处",
+  "title": "壹页",
+  "subtitle": "一页装下每天要打开的站点",
   "categories": [
     {
-      "name": "社交",
-      "icon": "users",
+      "name": "常读",
+      "icon": "book",
       "links": [
         {
-          "name": "X",
-          "url": "https://x.com",
-          "desc": "推特，实时资讯",
-          "tags": [
-            "推特",
-            "twitter",
-            "推"
-          ]
-        },
-        {
-          "name": "Facebook",
-          "url": "https://www.facebook.com",
-          "desc": "Meta 社交网络",
-          "tags": [
-            "脸书",
-            "fb",
-            "meta"
-          ]
-        },
-        {
-          "name": "Instagram",
-          "url": "https://www.instagram.com",
-          "desc": "图片与短视频社区",
-          "tags": [
-            "ins",
-            "ig"
-          ]
-        },
-        {
-          "name": "Threads",
-          "url": "https://www.threads.net",
-          "desc": "Meta 文字社交"
-        },
-        {
-          "name": "Reddit",
-          "url": "https://www.reddit.com",
-          "desc": "全球兴趣论坛",
-          "tags": [
-            "红迪"
-          ]
-        },
-        {
-          "name": "TikTok",
-          "url": "https://www.tiktok.com",
-          "desc": "海外短视频",
-          "tags": [
-            "抖音国际版"
-          ]
-        },
-        {
-          "name": "小红书",
-          "url": "https://www.xiaohongshu.com",
-          "desc": "生活兴趣社区",
-          "tags": [
-            "xhs",
-            "rednote"
-          ],
+          "name": "LINUX DO",
+          "url": "https://linux.do",
+          "desc": "中文技术社区新势力",
           "icon": "/favicon.ico"
         },
         {
-          "name": "微博",
-          "url": "https://weibo.com",
-          "desc": "中文社交媒体",
+          "name": "V2EX",
+          "url": "https://www.v2ex.com",
+          "desc": "创意工作者社区",
+          "icon": "/favicon.ico"
+        },
+        {
+          "name": "Hacker News",
+          "url": "https://news.ycombinator.com",
+          "desc": "硅谷技术新闻头条",
+          "icon": "/favicon.ico"
+        },
+        {
+          "name": "掘金",
+          "url": "https://juejin.cn",
+          "desc": "中文开发者内容社区"
+        },
+        {
+          "name": "博客园",
+          "url": "https://www.cnblogs.com",
+          "desc": "老牌开发者博客",
           "tags": [
-            "weibo"
+            "cnblogs"
           ]
         },
         {
-          "name": "Telegram Web",
-          "url": "https://web.telegram.org",
-          "desc": "即时通讯网页版",
+          "name": "知乎",
+          "url": "https://www.zhihu.com",
+          "desc": "问答与专栏",
           "tags": [
-            "tg",
-            "电报",
-            "telegram"
+            "zhihu"
           ]
         },
         {
-          "name": "Discord",
-          "url": "https://discord.com",
-          "desc": "社群语音与文字"
+          "name": "阮一峰的网络日志",
+          "url": "https://www.ruanyifeng.com",
+          "desc": "科技爱好者周刊",
+          "tags": [
+            "阮一峰",
+            "ruanyifeng"
+          ]
         },
         {
-          "name": "LinkedIn",
-          "url": "https://www.linkedin.com",
-          "desc": "职业社交网络",
+          "name": "酷壳 CoolShell",
+          "url": "https://coolshell.cn",
+          "desc": "陈皓技术博客（站方数据库故障中）",
           "tags": [
-            "领英"
+            "coolshell",
+            "陈皓"
+          ]
+        },
+        {
+          "name": "少数派",
+          "url": "https://sspai.com",
+          "desc": "效率工具与数字生活"
+        },
+        {
+          "name": "InfoQ",
+          "url": "https://www.infoq.cn",
+          "desc": "软件开发资讯"
+        },
+        {
+          "name": "开源中国",
+          "url": "https://www.oschina.net",
+          "desc": "国内开源资讯"
+        },
+        {
+          "name": "CSDN",
+          "url": "https://www.csdn.net",
+          "desc": "中文技术博客"
+        },
+        {
+          "name": "Google",
+          "url": "https://www.google.com",
+          "desc": "搜索"
+        },
+        {
+          "name": "百度",
+          "url": "https://www.baidu.com",
+          "desc": "中文搜索"
+        },
+        {
+          "name": "维基百科",
+          "url": "https://zh.wikipedia.org",
+          "desc": "自由百科全书",
+          "tags": [
+            "wiki",
+            "wikipedia"
           ]
         }
       ]
@@ -305,6 +310,103 @@
       ]
     },
     {
+      "name": "社交",
+      "icon": "users",
+      "links": [
+        {
+          "name": "X",
+          "url": "https://x.com",
+          "desc": "推特，实时资讯",
+          "tags": [
+            "推特",
+            "twitter",
+            "推"
+          ]
+        },
+        {
+          "name": "Facebook",
+          "url": "https://www.facebook.com",
+          "desc": "Meta 社交网络",
+          "tags": [
+            "脸书",
+            "fb",
+            "meta"
+          ]
+        },
+        {
+          "name": "Instagram",
+          "url": "https://www.instagram.com",
+          "desc": "图片与短视频社区",
+          "tags": [
+            "ins",
+            "ig"
+          ]
+        },
+        {
+          "name": "Threads",
+          "url": "https://www.threads.net",
+          "desc": "Meta 文字社交"
+        },
+        {
+          "name": "Reddit",
+          "url": "https://www.reddit.com",
+          "desc": "全球兴趣论坛",
+          "tags": [
+            "红迪"
+          ]
+        },
+        {
+          "name": "TikTok",
+          "url": "https://www.tiktok.com",
+          "desc": "海外短视频",
+          "tags": [
+            "抖音国际版"
+          ]
+        },
+        {
+          "name": "小红书",
+          "url": "https://www.xiaohongshu.com",
+          "desc": "生活兴趣社区",
+          "tags": [
+            "xhs",
+            "rednote"
+          ],
+          "icon": "/favicon.ico"
+        },
+        {
+          "name": "微博",
+          "url": "https://weibo.com",
+          "desc": "中文社交媒体",
+          "tags": [
+            "weibo"
+          ]
+        },
+        {
+          "name": "Telegram Web",
+          "url": "https://web.telegram.org",
+          "desc": "即时通讯网页版",
+          "tags": [
+            "tg",
+            "电报",
+            "telegram"
+          ]
+        },
+        {
+          "name": "Discord",
+          "url": "https://discord.com",
+          "desc": "社群语音与文字"
+        },
+        {
+          "name": "LinkedIn",
+          "url": "https://www.linkedin.com",
+          "desc": "职业社交网络",
+          "tags": [
+            "领英"
+          ]
+        }
+      ]
+    },
+    {
       "name": "AI 状态",
       "icon": "activity",
       "links": [
@@ -333,108 +435,6 @@
           "tags": [
             "claude",
             "服务状态"
-          ]
-        }
-      ]
-    },
-    {
-      "name": "常读",
-      "icon": "book",
-      "links": [
-        {
-          "name": "LINUX DO",
-          "url": "https://linux.do",
-          "desc": "中文技术社区新势力",
-          "icon": "/favicon.ico"
-        },
-        {
-          "name": "V2EX",
-          "url": "https://www.v2ex.com",
-          "desc": "创意工作者社区",
-          "icon": "/favicon.ico"
-        },
-        {
-          "name": "Hacker News",
-          "url": "https://news.ycombinator.com",
-          "desc": "硅谷技术新闻头条",
-          "icon": "/favicon.ico"
-        },
-        {
-          "name": "掘金",
-          "url": "https://juejin.cn",
-          "desc": "中文开发者内容社区"
-        },
-        {
-          "name": "博客园",
-          "url": "https://www.cnblogs.com",
-          "desc": "老牌开发者博客",
-          "tags": [
-            "cnblogs"
-          ]
-        },
-        {
-          "name": "知乎",
-          "url": "https://www.zhihu.com",
-          "desc": "问答与专栏",
-          "tags": [
-            "zhihu"
-          ]
-        },
-        {
-          "name": "阮一峰的网络日志",
-          "url": "https://www.ruanyifeng.com",
-          "desc": "科技爱好者周刊",
-          "tags": [
-            "阮一峰",
-            "ruanyifeng"
-          ]
-        },
-        {
-          "name": "酷壳 CoolShell",
-          "url": "https://coolshell.cn",
-          "desc": "陈皓技术博客（站方数据库故障中）",
-          "tags": [
-            "coolshell",
-            "陈皓"
-          ]
-        },
-        {
-          "name": "少数派",
-          "url": "https://sspai.com",
-          "desc": "效率工具与数字生活"
-        },
-        {
-          "name": "InfoQ",
-          "url": "https://www.infoq.cn",
-          "desc": "软件开发资讯"
-        },
-        {
-          "name": "开源中国",
-          "url": "https://www.oschina.net",
-          "desc": "国内开源资讯"
-        },
-        {
-          "name": "CSDN",
-          "url": "https://www.csdn.net",
-          "desc": "中文技术博客"
-        },
-        {
-          "name": "Google",
-          "url": "https://www.google.com",
-          "desc": "搜索"
-        },
-        {
-          "name": "百度",
-          "url": "https://www.baidu.com",
-          "desc": "中文搜索"
-        },
-        {
-          "name": "维基百科",
-          "url": "https://zh.wikipedia.org",
-          "desc": "自由百科全书",
-          "tags": [
-            "wiki",
-            "wikipedia"
           ]
         }
       ]

@@ -1,4 +1,4 @@
-# 常用网址
+# 壹页
 
 一个零构建的静态导航页，参考 Apple 官网的视觉语言：大留白、克制的灰阶、毛玻璃导航、有物理感的动效。
 
@@ -6,6 +6,7 @@
 - **分类筛选**：顶部 chip 统一承担切换与定位（不再与导航重复列一遍）；状态写入 URL hash 可直接分享；切换时用 FLIP 让卡片平滑移动而非瞬跳
 - **深浅色主题**：首访跟随系统，手动切换后记住；切换时图标旋转淡入
 - **动效**：Hero 极光视差、滚动揭示、卡片交错上映、指针跟随柔光、回到顶部环形进度、统计数字滚动
+- **站内编辑**：新增/修改/删除站点与分类、拖拽排序，改动即时生效并可导出 `links.json`
 - **零依赖**：无框架、无构建、无后端、无统计
 
 ## 文件结构
@@ -30,6 +31,34 @@ python3 -m http.server 8000
 ```
 
 改了 `links.json` 后刷新浏览器即可（已设 `cache: no-cache`，不会读到旧数据）。
+
+## 站内编辑
+
+点右上角「编辑」进入编辑模式，可以直接：
+
+- **新增站点**：每个分类末尾的虚线框「添加站点」
+- **修改/删除**：每张卡片右侧的铅笔与垃圾桶图标（编辑态下点卡片本身也可编辑）
+- **拖拽排序**：拖卡片调整顺序、可跨分类拖；拖分类标题左侧的手柄调整分类顺序
+- **管理分类**：分类标题右侧「重命名」、删除分类
+- **校验**：名称必填；网址必须以 `http://` 或 `https://` 开头，不合法会拦下并标红
+
+### 重要：本机编辑 ≠ 线上内容
+
+这是个纯静态站，没有后端，所以**浏览器里改的内容无法直接写回仓库文件**。机制是：
+
+| 步骤 | 效果 |
+| --- | --- |
+| 在站内编辑 | 存入浏览器 `localStorage`，**本机立即生效**，刷新后仍在 |
+| 点「导出 links.json」 | 下载一份完整数据文件 |
+| 用它替换仓库里的 `links.json` 并提交 | **持久化到线上，所有设备可见** |
+
+页面顶部在检测到本机改动时会显示提示条，可一键「导出」或「恢复线上版本」。
+
+**多设备不同步**是这套方案的固有代价：手机上加的站点不会自动出现在电脑上。要跨设备，就走导出 + 提交那条路。若想要真正在线编辑，需要引入后端与 GitHub OAuth 授权，那是另一个量级的工程。
+
+### 不想用站内编辑？
+
+直接在 GitHub 网页打开 `links.json`，点铅笔图标改完 Commit 即可，Pages 一分钟内自动更新 —— 零开发成本，缺点是手写 JSON、手机上不方便。
 
 ## 维护网址
 
@@ -66,17 +95,17 @@ python3 -m http.server 8000
 - 某分类 `links` 为空数组则整组不渲染
 - 别名只参与搜索，不显示在页面上 —— 想让站点用你的习惯叫法搜到就加 `tags`
 
-当前编目（73 个站点 / 7 个分类）：
+当前编目（73 个站点 / 7 个分类，按使用频次排序）：
 
-| 分类 | 数量 | 说明 |
-| --- | --- | --- |
-| 社交 | 11 | X、Facebook、Instagram、Threads、Reddit、TikTok、小红书、微博、Telegram、Discord、LinkedIn |
-| 开发工具 | 15 | GitHub、MDN、Stack Overflow、npm、PyPI、Docker Hub、Vercel 等 |
-| AI 工具 | 16 | DeepSeek、ChatGPT、Claude、Gemini、Grok、Hugging Face、Ollama 等 |
-| AI 状态 | 3 | TIBO（Codex 重置动态）、OpenAI Status、Claude Status |
-| 常读 | 15 | LINUX DO、V2EX、Hacker News、掘金、博客园、酷壳、阮一峰、Google/百度/维基 |
-| 影音 | 5 | YouTube、哔哩哔哩、Netflix、Spotify、Twitch |
-| 效率 | 8 | Excalidraw、Carbon、TinyPNG、Squoosh、PDF24、草料、ITDOG、Speedtest |
+| 顺序 | 分类 | 数量 | 说明 |
+| --- | --- | --- | --- |
+| 1 | 常读 | 15 | LINUX DO、V2EX、Hacker News、掘金、博客园、酷壳、阮一峰、Google/百度/维基 |
+| 2 | 开发工具 | 15 | GitHub、MDN、Stack Overflow、npm、PyPI、Docker Hub、Vercel 等 |
+| 3 | AI 工具 | 16 | DeepSeek、ChatGPT、Claude、Gemini、Grok、Hugging Face、Ollama 等 |
+| 4 | 社交 | 11 | X、Facebook、Instagram、Threads、Reddit、TikTok、小红书、微博、Telegram、Discord、LinkedIn |
+| 5 | AI 状态 | 3 | TIBO（Codex 重置动态）、OpenAI Status、Claude Status |
+| 6 | 影音 | 5 | YouTube、哔哩哔哩、Netflix、Spotify、Twitch |
+| 7 | 效率 | 8 | Excalidraw、Carbon、TinyPNG、Squoosh、PDF24、草料、ITDOG、Speedtest |
 - **别删掉 JSON 的引号和逗号**，格式错误会导致页面显示「数据加载失败」
 
 ## 部署到 GitHub Pages
