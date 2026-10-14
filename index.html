@@ -48,7 +48,7 @@
 
     --r-card: 17px;
     --r-pill: 980px;
-    --maxw:   1180px;
+    --maxw:   1280px;
 
     /* 动效曲线：出场用减速，回弹用轻微过冲 */
     --e-out:    cubic-bezier(.22, 1, .36, 1);
@@ -155,29 +155,7 @@
   }
   .brand:hover .brand-mark { transform: rotate(90deg); }
 
-  .nav-links { display: flex; gap: 1px; margin-left: 6px; overflow-x: auto; scrollbar-width: none; }
-  .nav-links::-webkit-scrollbar { display: none; }
-  .nav-link {
-    position: relative;
-    flex: none;
-    padding: 7px 12px;
-    font-size: 13.5px;
-    color: var(--t2);
-    text-decoration: none;
-    border-radius: 8px;
-    white-space: nowrap;
-    transition: color var(--fast) var(--e-out), background var(--fast) var(--e-out);
-  }
-  .nav-link:hover { color: var(--t1); background: var(--accent-soft); }
-  /* 悬停时从左展开的下划线，比背景块更轻 */
-  .nav-link::after {
-    content: ""; position: absolute; left: 12px; right: 12px; bottom: 3px;
-    height: 1.5px; border-radius: 2px;
-    background: var(--accent);
-    transform: scaleX(0); transform-origin: left;
-    transition: transform var(--mid) var(--e-out);
-  }
-  .nav-link:hover::after { transform: scaleX(1); }
+  /* 分类切换统一由下方 chip 承担，顶部导航不再重复列一遍分类 */
 
   .nav-right { margin-left: auto; display: flex; align-items: center; gap: 6px; }
 
@@ -270,67 +248,72 @@
     position: relative;
     max-width: var(--maxw);
     margin: 0 auto;
-    padding: 82px 26px 30px;
-    text-align: center;
-    /* 极光是 940px 宽的溢出元素，必须在这里裁掉：
-       body 的 overflow-x:hidden 并不能阻止文档被撑宽 */
+    padding: 68px 26px 34px;
+    /* 与内容区同为左对齐 —— 一页内混用居中与左对齐会让版面散掉。
+       极光是 940px 溢出元素，必须在此裁掉（body 的 overflow-x 挡不住文档被撑宽）。 */
     overflow: hidden;
   }
+  /* 左上角极淡的环境光，替代原先铺满整个宽度的居中光斑 */
   .aurora {
     position: absolute;
-    left: 50%; top: -210px;
-    width: 940px; height: 540px;
-    transform: translateX(-50%);
+    left: -140px; top: -230px;
+    width: 760px; height: 460px;
     pointer-events: none;
-    opacity: .42;
-    filter: blur(56px);
+    opacity: .65;
+    filter: blur(58px);
     background:
-      radial-gradient(circle at 27% 44%, rgba(0,113,227,.40), transparent 46%),
-      radial-gradient(circle at 71% 33%, rgba(175,82,222,.30), transparent 48%),
-      radial-gradient(circle at 50% 72%, rgba(255,55,95,.20), transparent 52%);
-    animation: drift 22s var(--e-inout) infinite alternate;
+      radial-gradient(circle at 34% 44%, rgba(0,113,227,.34), transparent 52%),
+      radial-gradient(circle at 62% 30%, rgba(175,82,222,.24), transparent 54%),
+      radial-gradient(circle at 20% 72%, rgba(255,55,95,.14), transparent 56%);
+    animation: drift 24s var(--e-inout) infinite alternate;
   }
-  html[data-theme="dark"] .aurora { opacity: .34; }
+  html[data-theme="dark"] .aurora { opacity: .5; }
   @keyframes drift {
-    0%   { transform: translateX(-50%) translateY(0) scale(1); }
-    50%  { transform: translateX(-52%) translateY(20px) scale(1.08); }
-    100% { transform: translateX(-48%) translateY(-12px) scale(1.03); }
+    0%   { transform: translate(0, 0) scale(1); }
+    50%  { transform: translate(26px, 22px) scale(1.07); }
+    100% { transform: translate(-14px, -12px) scale(1.03); }
   }
 
+  .hero-inner { position: relative; max-width: 640px; }
+
   .hero h1 {
-    position: relative;
-    margin: 0 0 13px;
-    font-size: clamp(38px, 6vw, 60px);
+    margin: 0 0 14px;
+    font-size: clamp(34px, 5.4vw, 54px);
     font-weight: 700;
-    letter-spacing: -.03em;
-    line-height: 1.05;
-    background: linear-gradient(180deg, var(--t1) 62%, color-mix(in srgb, var(--t1) 62%, transparent));
+    letter-spacing: -.032em;
+    line-height: 1.06;
+    background: linear-gradient(180deg, var(--t1) 58%, color-mix(in srgb, var(--t1) 68%, transparent));
     -webkit-background-clip: text; background-clip: text;
     -webkit-text-fill-color: transparent;
   }
   .hero .sub {
-    position: relative;
-    margin: 0 0 24px;
-    font-size: clamp(15.5px, 1.9vw, 18.5px);
+    margin: 0 0 30px;
+    font-size: clamp(15.5px, 1.7vw, 18px);
+    line-height: 1.55;
     color: var(--t2);
-    letter-spacing: -.012em;
+    letter-spacing: -.008em;
   }
-  .stats {
-    position: relative;
-    display: inline-flex; gap: 0;
-    font-size: 13px; color: var(--t3);
+  /* 统计不再挤成一行数字：改成三个有语义的数据块 */
+  .stats { display: flex; gap: 0; }
+  .stats .item {
+    display: flex; flex-direction: column; gap: 3px;
+    padding-right: 26px;
   }
-  .stats span { display: inline-flex; align-items: baseline; gap: 5px; }
-  .stats span + span::before {
-    content: ""; display: block;
-    width: 1px; height: 11px; margin: 0 15px;
-    background: var(--line-strong);
-    align-self: center;
+  .stats .item + .item {
+    padding-left: 26px;
+    border-left: 1px solid var(--line);
   }
   .stats b {
-    color: var(--t1); font-weight: 620;
+    font-size: 21px; font-weight: 640;
+    line-height: 1;
+    color: var(--t1);
+    letter-spacing: -.02em;
     font-variant-numeric: tabular-nums;
-    font-size: 14px;
+  }
+  .stats .lbl {
+    font-size: 12.5px;
+    color: var(--t3);
+    letter-spacing: .01em;
   }
 
   /* ══════════════════════════════════════════════════════════
@@ -365,6 +348,9 @@
     border-radius: var(--r-pill);
     cursor: pointer;
     white-space: nowrap;
+    text-decoration: none;   /* 已改为 <a>，去掉下划线 */
+    /* hash 锚点滚动时避开吸顶的导航与筛选条 */
+    scroll-margin-top: 120px;
     transition: color var(--fast) var(--e-out), background var(--fast) var(--e-out),
                 border-color var(--fast) var(--e-out), box-shadow var(--fast) var(--e-out),
                 transform var(--fast) var(--e-spring);
@@ -623,7 +609,6 @@
   @media (max-width: 900px) {
     .search { width: 148px; }
     .search:focus-within { width: 200px; }
-    .nav-links { display: none; }
   }
   @media (max-width: 600px) {
     .nav-inner { padding: 0 16px; gap: 10px; }
@@ -631,14 +616,16 @@
     .search { flex: 1; width: auto; }
     .search:focus-within { width: auto; }
     .nav-right { flex: 1; }
-    .hero { padding: 50px 16px 22px; }
+    .hero { padding: 40px 16px 26px; }
     .filters { padding: 11px 16px; }
     main { padding: 30px 16px 76px; }
     footer { padding: 22px 16px; flex-direction: column; align-items: flex-start; }
     .grid, .skeleton { grid-template-columns: 1fr; }
     .totop { right: 16px; bottom: 16px; width: 42px; height: 42px; }
     .kbd { display: none; }
-    .stats span + span::before { margin: 0 11px; }
+    .hero .sub { margin-bottom: 24px; }
+    .stats .item { padding-right: 20px; }
+    .stats .item + .item { padding-left: 20px; }
   }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -660,7 +647,6 @@
     <a class="brand" href="#top" aria-label="回到顶部">
       <span class="brand-mark"></span><span id="brandText">常用网址</span>
     </a>
-    <div class="nav-links" id="navLinks"></div>
     <div class="nav-right">
       <div class="search" id="searchbox">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
@@ -684,9 +670,11 @@
 
 <header class="hero" id="top">
   <div class="aurora"></div>
-  <h1 class="reveal" id="heroTitle">常用网址</h1>
-  <p class="sub reveal" id="heroSub">把每天要打开的站点放在一处</p>
-  <div class="stats reveal" id="stats"></div>
+  <div class="hero-inner">
+    <h1 class="reveal" id="heroTitle">常用网址</h1>
+    <p class="sub reveal" id="heroSub">把每天要打开的站点放在一处</p>
+    <div class="stats reveal" id="stats"></div>
+  </div>
 </header>
 
 <div class="filters-wrap" id="filtersWrap">
@@ -704,8 +692,8 @@
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
     <circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>
   </svg>
-  <h3>没有匹配的站点</h3>
-  <p>换个关键词试试，或点「全部」查看所有站点。</p>
+  <h3 id="emptyTitle">没有匹配的站点</h3>
+  <p id="emptyHint">换个关键词试试，或点「全部」查看所有站点。</p>
 </div>
 
 <button class="totop" id="totop" type="button" aria-label="回到顶部">
@@ -769,7 +757,6 @@
   var activeCat = "all";
   var query = "";
   var cards = [];
-  var navLinksEl = $("navLinks");
   var filtersEl = $("filters");
   var mainEl = $("main");
   var emptyEl = $("empty");
@@ -892,24 +879,17 @@
     if ($("skeleton")) $("skeleton").remove();
     mainEl.innerHTML = "";
     filtersEl.innerHTML = "";
-    navLinksEl.innerHTML = "";
     cards = [];
 
     var cats = (DATA.categories || []).filter(function (c) { return c && c.links && c.links.length; });
     var totalAll = cats.reduce(function (n, c) { return n + c.links.length; }, 0);
 
-    cats.forEach(function (c) {
-      var a = document.createElement("a");
-      a.className = "nav-link";
-      a.href = "#c-" + encodeURIComponent(c.name);
-      a.textContent = c.name;
-      navLinksEl.appendChild(a);
-    });
-
     function chip(label, value, count) {
-      var b = document.createElement("button");
-      b.type = "button";
+      /* 用 <a> 而非 <button>：既是筛选控件，也是可分享、可右键新开、
+         可被键盘与读屏正常识别的链接 */
+      var b = document.createElement("a");
       b.className = "chip";
+      b.href = value === "all" ? "#" : "#cat=" + encodeURIComponent(value);
       b.setAttribute("aria-pressed", String(activeCat === value));
       b.dataset.value = value;
       var l = document.createElement("span");
@@ -919,7 +899,11 @@
       n.className = "n";
       n.textContent = count;
       b.appendChild(n);
-      b.addEventListener("click", function () { setCat(value); });
+      b.addEventListener("click", function (e) {
+        e.preventDefault();
+        setCat(value);
+        b.blur();
+      });
       return b;
     }
     if (cats.length > 1) filtersEl.appendChild(chip("全部", "all", totalAll));
@@ -969,16 +953,36 @@
 
     $("footCount").textContent = "共 " + totalAll + " 个站点，分 " + cats.length + " 类";
     renderStats(totalAll, cats.length);
-    document.querySelectorAll(".nav-link").forEach(function (a) {
-      a.addEventListener("click", function () { a.blur(); });
+
+    /* hash 里的分类若不存在（域名变更、手工改址、旧链接）则回退到「全部」，
+       绝不让用户看到一个空白页 */
+    if (activeCat !== "all" && !cards.some(function (c) { return c.cat === activeCat; })) {
+      activeCat = "all";
+    }
+    Array.prototype.forEach.call(filtersEl.children, function (c) {
+      c.setAttribute("aria-pressed", String(c.dataset.value === activeCat));
     });
+
+    /* #sec=分类名 → 渲染完成后滚动定位 */
+    if (pendingSec) {
+      var target = document.getElementById("c-" + pendingSec);
+      if (target) {
+        requestAnimationFrame(function () {
+          target.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+        });
+      }
+      pendingSec = null;
+    }
+
     applyFilter();
   }
 
   /* 数字滚动：让统计栏有"落定"感 */
   function renderStats(total, cats) {
     var el = $("stats");
-    el.innerHTML = "<span><b>0</b> 个站点</span><span><b>0</b> 个分类</span>";
+    el.innerHTML =
+      '<div class="item"><b>0</b><span class="lbl">个站点</span></div>' +
+      '<div class="item"><b>0</b><span class="lbl">个分类</span></div>';
     var bs = el.querySelectorAll("b");
     if (reduceMotion) {
       bs[0].textContent = total;
@@ -996,17 +1000,37 @@
     });
   }
 
-  /* 切换分类 —— 用 FLIP 让卡片平滑滑到新位置，而不是瞬间跳 */
+  /* hash 工具：用显式前缀区分两种语义，避免共用一个裸分类名导致解析冲突
+     #cat=分类名 → 筛选     #sec=分类名 → 滚动到该分组 */
+  function writeHash(kind, value) {
+    try {
+      if (!kind || !value) history.replaceState(null, "", location.pathname + location.search);
+      else history.replaceState(null, "", "#" + kind + "=" + encodeURIComponent(value));
+    } catch (e) {}
+  }
+  function readHash() {
+    var raw = (location.hash || "").slice(1);
+    if (!raw) return null;
+    if (raw.indexOf("cat=") === 0) return { kind: "cat", value: decodeURIComponent(raw.slice(4)) };
+    if (raw.indexOf("sec=") === 0) return { kind: "sec", value: decodeURIComponent(raw.slice(4)) };
+    var legacy = decodeURIComponent(raw);
+    /* 兼容更早版本的 #c-分类名 锚点写法：剥掉前缀后按分类处理 */
+    if (legacy.indexOf("c-") === 0) {
+      var name = legacy.slice(2);
+      if (name) return { kind: "cat", value: name };
+    }
+    if (legacy) return { kind: "cat", value: legacy };
+    return null;
+  }
+
+  /* 切换分类（用户点 chip） */
   function setCat(value) {
     var prev = activeCat;
     activeCat = value;
     Array.prototype.forEach.call(filtersEl.children, function (c) {
       c.setAttribute("aria-pressed", String(c.dataset.value === value));
     });
-    try {
-      if (value === "all") history.replaceState(null, "", location.pathname + location.search);
-      else history.replaceState(null, "", "#" + encodeURIComponent(value));
-    } catch (e) {}
+    writeHash(value === "all" ? "" : "cat", value === "all" ? "" : value);
 
     if (!reduceMotion && prev !== value) {
       var firstRects = new Map();
@@ -1065,6 +1089,20 @@
     });
 
     emptyEl.classList.toggle("show", visibleTotal === 0);
+    /* 提示要分清原因：搜索无结果 / 该分类为空 / 分类不存在，否则会给出误导性建议 */
+    if (visibleTotal === 0) {
+      var title = $("emptyTitle"), hint = $("emptyHint");
+      if (q) {
+        title.textContent = "没有匹配的站点";
+        hint.textContent = "换个关键词试试，或清空搜索框查看全部。";
+      } else if (activeCat !== "all") {
+        title.textContent = "「" + activeCat + "」下暂无站点";
+        hint.textContent = "点上方「全部」查看所有站点。";
+      } else {
+        title.textContent = "还没有任何站点";
+        hint.textContent = "编辑 links.json 添加后刷新即可。";
+      }
+    }
     searchbox.classList.toggle("has-value", q.length > 0);
   }
 
@@ -1137,7 +1175,8 @@
     var hero = document.querySelector(".hero");
     window.addEventListener("scroll", function () {
       var y = Math.min(window.scrollY, 460);
-      if (aurora) aurora.style.transform = "translateX(-50%) translateY(" + (y * .16) + "px)";
+      /* 极光改为左上定位后，这里不能再叠加 translateX(-50%) */
+      if (aurora) aurora.style.transform = "translateY(" + (y * .14) + "px)";
       if (hero) hero.style.opacity = String(Math.max(1 - y / 520, 0));
     }, { passive: true });
   }
@@ -1159,9 +1198,38 @@
   setTimeout(forceRevealAll, 1200);
   window.addEventListener("load", function () { setTimeout(forceRevealAll, 600); });
 
-  /* hash 恢复 */
-  var hash = decodeURIComponent((location.hash || "").slice(1));
-  if (hash) activeCat = hash;
+  /* hash 恢复：只在确认分类存在时才应用，否则安全回退到「全部」，
+     绝不因为一个无法识别的 hash 而显示空白页 */
+  var pendingHash = readHash();
+  var pendingSec = null;
+  if (pendingHash) {
+    if (pendingHash.kind === "sec") pendingSec = pendingHash.value;
+    else pendingHash.value && (activeCat = pendingHash.value);
+  } else if (location.hash) {
+    activeCat = "all";
+  }
+
+  /* 前进/后退时同步筛选与定位 */
+  window.addEventListener("hashchange", function () {
+    var h = readHash();
+    if (!h) {
+      if (activeCat !== "all") goCat("all");
+      return;
+    }
+    if (h.kind === "sec") return;          /* 滚动类由浏览器处理 */
+    goCat(h.value);
+  });
+
+  /* 不触发滚动、不写入历史的分类切换（供 hashchange 调用） */
+  function goCat(value) {
+    var known = value === "all" || cards.some(function (c) { return c.cat === value; });
+    var target = known ? value : "all";
+    activeCat = target;
+    Array.prototype.forEach.call(filtersEl.children, function (c) {
+      c.setAttribute("aria-pressed", String(c.dataset.value === target));
+    });
+    applyFilter();
+  }
 
   /* ══════════════ 数据 ══════════════ */
   fetch("links.json", { cache: "no-cache" })
