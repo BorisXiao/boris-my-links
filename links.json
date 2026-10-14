@@ -1,0 +1,316 @@
+{
+  "title": "常用网址",
+  "subtitle": "把每天要打开的站点放在一处",
+  "categories": [
+    {
+      "name": "开发工具",
+      "icon": "terminal",
+      "links": [
+        {
+          "name": "GitHub",
+          "url": "https://github.com",
+          "desc": "代码托管与协作"
+        },
+        {
+          "name": "MDN Web Docs",
+          "url": "https://developer.mozilla.org",
+          "desc": "Web 技术权威文档"
+        },
+        {
+          "name": "Stack Overflow",
+          "url": "https://stackoverflow.com",
+          "desc": "编程问答社区"
+        },
+        {
+          "name": "npm",
+          "url": "https://www.npmjs.com",
+          "desc": "Node 包仓库"
+        },
+        {
+          "name": "PyPI",
+          "url": "https://pypi.org",
+          "desc": "Python 包仓库"
+        },
+        {
+          "name": "Docker Hub",
+          "url": "https://hub.docker.com",
+          "desc": "容器镜像仓库"
+        },
+        {
+          "name": "Vercel",
+          "url": "https://vercel.com",
+          "desc": "前端部署平台"
+        },
+        {
+          "name": "GitLab",
+          "url": "https://gitlab.com",
+          "desc": "DevOps 一体化平台"
+        },
+        {
+          "name": "Can I use",
+          "url": "https://caniuse.com",
+          "desc": "浏览器兼容性查询"
+        },
+        {
+          "name": "DevDocs",
+          "url": "https://devdocs.io",
+          "desc": "多语言文档聚合"
+        },
+        {
+          "name": "RegExr",
+          "url": "https://regex101.com",
+          "desc": "正则调试与解释"
+        },
+        {
+          "name": "JSON Formatter",
+          "url": "https://jsonformatter.org",
+          "desc": "JSON 格式化校验"
+        },
+        {
+          "name": "crates.io",
+          "url": "https://crates.io",
+          "desc": "Rust 包仓库"
+        },
+        {
+          "name": "阿里云开发者",
+          "url": "https://developer.aliyun.com",
+          "desc": "阿里云技术社区"
+        },
+        {
+          "name": "腾讯云",
+          "url": "https://cloud.tencent.com",
+          "desc": "云服务控制台"
+        }
+      ]
+    },
+    {
+      "name": "AI 工具",
+      "icon": "sparkles",
+      "links": [
+        {
+          "name": "DeepSeek",
+          "url": "https://chat.deepseek.com",
+          "desc": "深度求索对话"
+        },
+        {
+          "name": "ChatGPT",
+          "url": "https://chatgpt.com",
+          "desc": "OpenAI 对话"
+        },
+        {
+          "name": "Claude",
+          "url": "https://claude.ai",
+          "desc": "Anthropic 对话"
+        },
+        {
+          "name": "Gemini",
+          "url": "https://gemini.google.com",
+          "desc": "Google 多模态助手"
+        },
+        {
+          "name": "Grok",
+          "url": "https://grok.com",
+          "desc": "xAI 对话助手"
+        },
+        {
+          "name": "Hugging Face",
+          "url": "https://huggingface.co",
+          "desc": "模型与数据集社区"
+        },
+        {
+          "name": "Google AI Studio",
+          "url": "https://aistudio.google.com",
+          "desc": "Gemini API 试验台"
+        },
+        {
+          "name": "OpenRouter",
+          "url": "https://openrouter.ai",
+          "desc": "多模型统一网关"
+        },
+        {
+          "name": "Ollama",
+          "url": "https://ollama.com",
+          "desc": "本地大模型运行"
+        },
+        {
+          "name": "LM Studio",
+          "url": "https://lmstudio.ai",
+          "desc": "本地模型桌面端"
+        },
+        {
+          "name": "Replicate",
+          "url": "https://replicate.com",
+          "desc": "云端跑开源模型"
+        },
+        {
+          "name": "Kimi",
+          "url": "https://www.kimi.com",
+          "desc": "月之暗面长文本"
+        },
+        {
+          "name": "豆包",
+          "url": "https://www.doubao.com",
+          "desc": "字节跳动 AI 助手"
+        },
+        {
+          "name": "通义千问",
+          "url": "https://tongyi.aliyun.com",
+          "desc": "阿里通义对话"
+        },
+        {
+          "name": "智谱清言",
+          "url": "https://chatglm.cn",
+          "desc": "GLM 系列助手"
+        },
+        {
+          "name": "Qwen Chat",
+          "url": "https://chat.qwen.ai",
+          "desc": "通义千问国际版"
+        }
+      ]
+    },
+    {
+      "name": "常读",
+      "icon": "book",
+      "links": [
+        {
+          "name": "LINUX DO",
+          "url": "https://linux.do",
+          "desc": "中文技术社区新势力"
+        },
+        {
+          "name": "V2EX",
+          "url": "https://www.v2ex.com",
+          "desc": "创意工作者社区"
+        },
+        {
+          "name": "Hacker News",
+          "url": "https://news.ycombinator.com",
+          "desc": "硅谷技术新闻头条"
+        },
+        {
+          "name": "掘金",
+          "url": "https://juejin.cn",
+          "desc": "中文开发者内容社区"
+        },
+        {
+          "name": "博客园",
+          "url": "https://www.cnblogs.com",
+          "desc": "老牌开发者博客"
+        },
+        {
+          "name": "知乎",
+          "url": "https://www.zhihu.com",
+          "desc": "问答与专栏"
+        },
+        {
+          "name": "阮一峰的网络日志",
+          "url": "https://www.ruanyifeng.com",
+          "desc": "科技爱好者周刊"
+        },
+        {
+          "name": "酷壳 CoolShell",
+          "url": "https://coolshell.cn",
+          "desc": "陈皓技术博客"
+        },
+        {
+          "name": "少数派",
+          "url": "https://sspai.com",
+          "desc": "效率工具与数字生活"
+        },
+        {
+          "name": "InfoQ",
+          "url": "https://www.infoq.cn",
+          "desc": "软件开发资讯"
+        },
+        {
+          "name": "开源中国",
+          "url": "https://www.oschina.net",
+          "desc": "国内开源资讯"
+        },
+        {
+          "name": "CSDN",
+          "url": "https://www.csdn.net",
+          "desc": "中文技术博客"
+        }
+      ]
+    },
+    {
+      "name": "常用",
+      "icon": "compass",
+      "links": [
+        {
+          "name": "Google",
+          "url": "https://www.google.com",
+          "desc": "搜索"
+        },
+        {
+          "name": "哔哩哔哩",
+          "url": "https://www.bilibili.com",
+          "desc": "视频学习与娱乐"
+        },
+        {
+          "name": "YouTube",
+          "url": "https://www.youtube.com",
+          "desc": "全球视频平台"
+        },
+        {
+          "name": "维基百科",
+          "url": "https://zh.wikipedia.org",
+          "desc": "自由百科全书"
+        },
+        {
+          "name": "百度",
+          "url": "https://www.baidu.com",
+          "desc": "中文搜索"
+        }
+      ]
+    },
+    {
+      "name": "效率",
+      "icon": "zap",
+      "links": [
+        {
+          "name": "Excalidraw",
+          "url": "https://excalidraw.com",
+          "desc": "手绘风白板"
+        },
+        {
+          "name": "Carbon",
+          "url": "https://carbon.now.sh",
+          "desc": "代码截图美化"
+        },
+        {
+          "name": "TinyPNG",
+          "url": "https://tinypng.com",
+          "desc": "图片压缩"
+        },
+        {
+          "name": "Squoosh",
+          "url": "https://squoosh.app",
+          "desc": "Google 图片压缩"
+        },
+        {
+          "name": "PDF24",
+          "url": "https://tools.pdf24.org",
+          "desc": "PDF 在线工具箱"
+        },
+        {
+          "name": "草料二维码",
+          "url": "https://cli.im",
+          "desc": "二维码生成"
+        },
+        {
+          "name": "IT Dog",
+          "url": "https://www.itdog.cn",
+          "desc": "网络测速与拨测"
+        },
+        {
+          "name": "Speedtest",
+          "url": "https://www.speedtest.net",
+          "desc": "网速测试"
+        }
+      ]
+    }
+  ]
+}
