@@ -2,7 +2,7 @@
 
 一个零构建的静态导航页，参考 Apple 官网的视觉语言：大留白、克制的灰阶、毛玻璃导航、有物理感的动效。
 
-- **搜索**：匹配名称、描述、网址、域名，命中关键词会高亮
+- **搜索**：匹配名称、描述、网址、域名、**别名 tags**，命中关键词会高亮
 - **分类筛选**：顶部 chip 切换，状态写入 URL hash，可直接分享
 - **深浅色主题**：首访跟随系统，手动切换后记住
 - **动效**：Hero 极光渐变、滚动揭示、卡片交错上映、鼠标跟随柔光、回到顶部
@@ -59,9 +59,23 @@ python3 -m http.server 8000
 | `links[].name` | 是 | 站点名 |
 | `links[].url` | 是 | 网址，必须带 `https://` |
 | `links[].desc` | 否 | 一句话描述；省略则显示域名 |
+| `links[].tags` | 否 | 别名数组，用于搜索。例如 YouTube 配 `["油管"]`，搜「油管」也能命中 |
 
 - 分类顺序 = 页面展示顺序
 - 某分类 `links` 为空数组则整组不渲染
+- 别名只参与搜索，不显示在页面上 —— 想让站点用你的习惯叫法搜到就加 `tags`
+
+当前编目（73 个站点 / 7 个分类）：
+
+| 分类 | 数量 | 说明 |
+| --- | --- | --- |
+| 社交 | 11 | X、Facebook、Instagram、Threads、Reddit、TikTok、小红书、微博、Telegram、Discord、LinkedIn |
+| 开发工具 | 15 | GitHub、MDN、Stack Overflow、npm、PyPI、Docker Hub、Vercel 等 |
+| AI 工具 | 16 | DeepSeek、ChatGPT、Claude、Gemini、Grok、Hugging Face、Ollama 等 |
+| AI 状态 | 3 | TIBO（Codex 重置动态）、OpenAI Status、Claude Status |
+| 常读 | 15 | LINUX DO、V2EX、Hacker News、掘金、博客园、酷壳、阮一峰、Google/百度/维基 |
+| 影音 | 5 | YouTube、哔哩哔哩、Netflix、Spotify、Twitch |
+| 效率 | 8 | Excalidraw、Carbon、TinyPNG、Squoosh、PDF24、草料、ITDOG、Speedtest |
 - **别删掉 JSON 的引号和逗号**，格式错误会导致页面显示「数据加载失败」
 
 ## 部署到 GitHub Pages

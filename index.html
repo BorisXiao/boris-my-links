@@ -746,7 +746,8 @@
       cat: link.__cat,
       name: link.name || host,
       desc: link.desc || host,
-      hay: ((link.name || "") + " " + (link.desc || "") + " " + (link.url || "") + " " + host).toLowerCase()
+      hay: ((link.name || "") + " " + (link.desc || "") + " " + (link.url || "") + " " + host + " " +
+            (Array.isArray(link.tags) ? link.tags.join(" ") : "")).toLowerCase()
     };
   }
 
@@ -837,8 +838,7 @@
 
     $("footCount").textContent = "共 " + totalAll + " 个站点，分 " + cats.length + " 类";
     $("stats").innerHTML =
-      "<span><b>" + totalAll + "</b> 个站点</span>" +
-      "<span><b>" + cats.length + "</b> 个分类</span>";
+      "<span><b>" + totalAll + "</b> 个站点</span><span><b>" + cats.length + "</b> 个分类</span>";
 
     applyFilter();
   }

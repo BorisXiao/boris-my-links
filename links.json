@@ -3,6 +3,102 @@
   "subtitle": "把每天要打开的站点放在一处",
   "categories": [
     {
+      "name": "社交",
+      "icon": "users",
+      "links": [
+        {
+          "name": "X",
+          "url": "https://x.com",
+          "desc": "推特，实时资讯",
+          "tags": [
+            "推特",
+            "twitter",
+            "推"
+          ]
+        },
+        {
+          "name": "Facebook",
+          "url": "https://www.facebook.com",
+          "desc": "Meta 社交网络",
+          "tags": [
+            "脸书",
+            "fb",
+            "meta"
+          ]
+        },
+        {
+          "name": "Instagram",
+          "url": "https://www.instagram.com",
+          "desc": "图片与短视频社区",
+          "tags": [
+            "ins",
+            "ig"
+          ]
+        },
+        {
+          "name": "Threads",
+          "url": "https://www.threads.net",
+          "desc": "Meta 文字社交"
+        },
+        {
+          "name": "Reddit",
+          "url": "https://www.reddit.com",
+          "desc": "全球兴趣论坛",
+          "tags": [
+            "红迪"
+          ]
+        },
+        {
+          "name": "TikTok",
+          "url": "https://www.tiktok.com",
+          "desc": "海外短视频",
+          "tags": [
+            "抖音国际版"
+          ]
+        },
+        {
+          "name": "小红书",
+          "url": "https://www.xiaohongshu.com",
+          "desc": "生活兴趣社区",
+          "tags": [
+            "xhs",
+            "rednote"
+          ]
+        },
+        {
+          "name": "微博",
+          "url": "https://weibo.com",
+          "desc": "中文社交媒体",
+          "tags": [
+            "weibo"
+          ]
+        },
+        {
+          "name": "Telegram Web",
+          "url": "https://web.telegram.org",
+          "desc": "即时通讯网页版",
+          "tags": [
+            "tg",
+            "电报",
+            "telegram"
+          ]
+        },
+        {
+          "name": "Discord",
+          "url": "https://discord.com",
+          "desc": "社群语音与文字"
+        },
+        {
+          "name": "LinkedIn",
+          "url": "https://www.linkedin.com",
+          "desc": "职业社交网络",
+          "tags": [
+            "领英"
+          ]
+        }
+      ]
+    },
+    {
       "name": "开发工具",
       "icon": "terminal",
       "links": [
@@ -90,32 +186,54 @@
         {
           "name": "DeepSeek",
           "url": "https://chat.deepseek.com",
-          "desc": "深度求索对话"
+          "desc": "深度求索对话",
+          "tags": [
+            "深度求索",
+            "ds"
+          ]
         },
         {
           "name": "ChatGPT",
           "url": "https://chatgpt.com",
-          "desc": "OpenAI 对话"
+          "desc": "OpenAI 对话",
+          "tags": [
+            "gpt",
+            "openai"
+          ]
         },
         {
           "name": "Claude",
           "url": "https://claude.ai",
-          "desc": "Anthropic 对话"
+          "desc": "Anthropic 对话",
+          "tags": [
+            "anthropic"
+          ]
         },
         {
           "name": "Gemini",
           "url": "https://gemini.google.com",
-          "desc": "Google 多模态助手"
+          "desc": "Google 多模态助手",
+          "tags": [
+            "谷歌",
+            "bard"
+          ]
         },
         {
           "name": "Grok",
           "url": "https://grok.com",
-          "desc": "xAI 对话助手"
+          "desc": "xAI 对话助手",
+          "tags": [
+            "xai"
+          ]
         },
         {
           "name": "Hugging Face",
           "url": "https://huggingface.co",
-          "desc": "模型与数据集社区"
+          "desc": "模型与数据集社区",
+          "tags": [
+            "hf",
+            "抱抱脸"
+          ]
         },
         {
           "name": "Google AI Studio",
@@ -145,27 +263,75 @@
         {
           "name": "Kimi",
           "url": "https://www.kimi.com",
-          "desc": "月之暗面长文本"
+          "desc": "月之暗面长文本",
+          "tags": [
+            "月之暗面",
+            "moonshot"
+          ]
         },
         {
           "name": "豆包",
           "url": "https://www.doubao.com",
-          "desc": "字节跳动 AI 助手"
+          "desc": "字节跳动 AI 助手",
+          "tags": [
+            "doubao"
+          ]
         },
         {
           "name": "通义千问",
           "url": "https://tongyi.aliyun.com",
-          "desc": "阿里通义对话"
+          "desc": "阿里通义对话",
+          "tags": [
+            "qwen",
+            "通义"
+          ]
         },
         {
           "name": "智谱清言",
           "url": "https://chatglm.cn",
-          "desc": "GLM 系列助手"
+          "desc": "GLM 系列助手",
+          "tags": [
+            "glm",
+            "智谱"
+          ]
         },
         {
           "name": "Qwen Chat",
           "url": "https://chat.qwen.ai",
           "desc": "通义千问国际版"
+        }
+      ]
+    },
+    {
+      "name": "AI 状态",
+      "icon": "activity",
+      "links": [
+        {
+          "name": "TIBO",
+          "url": "https://tibo.cc",
+          "desc": "Codex 重置动态追踪",
+          "tags": [
+            "codex",
+            "重置"
+          ]
+        },
+        {
+          "name": "OpenAI Status",
+          "url": "https://status.openai.com",
+          "desc": "ChatGPT 服务状态",
+          "tags": [
+            "openai",
+            "服务状态"
+          ]
+        },
+        {
+          "name": "Claude Status",
+          "url": "https://status.claude.com",
+          "desc": "Claude 服务状态",
+          "tags": [
+            "claude",
+            "服务状态"
+          ]
         }
       ]
     },
@@ -196,22 +362,36 @@
         {
           "name": "博客园",
           "url": "https://www.cnblogs.com",
-          "desc": "老牌开发者博客"
+          "desc": "老牌开发者博客",
+          "tags": [
+            "cnblogs"
+          ]
         },
         {
           "name": "知乎",
           "url": "https://www.zhihu.com",
-          "desc": "问答与专栏"
+          "desc": "问答与专栏",
+          "tags": [
+            "zhihu"
+          ]
         },
         {
           "name": "阮一峰的网络日志",
           "url": "https://www.ruanyifeng.com",
-          "desc": "科技爱好者周刊"
+          "desc": "科技爱好者周刊",
+          "tags": [
+            "阮一峰",
+            "ruanyifeng"
+          ]
         },
         {
           "name": "酷壳 CoolShell",
           "url": "https://coolshell.cn",
-          "desc": "陈皓技术博客"
+          "desc": "陈皓技术博客（站方数据库故障中）",
+          "tags": [
+            "coolshell",
+            "陈皓"
+          ]
         },
         {
           "name": "少数派",
@@ -232,37 +412,64 @@
           "name": "CSDN",
           "url": "https://www.csdn.net",
           "desc": "中文技术博客"
-        }
-      ]
-    },
-    {
-      "name": "常用",
-      "icon": "compass",
-      "links": [
+        },
         {
           "name": "Google",
           "url": "https://www.google.com",
           "desc": "搜索"
         },
         {
-          "name": "哔哩哔哩",
-          "url": "https://www.bilibili.com",
-          "desc": "视频学习与娱乐"
-        },
-        {
-          "name": "YouTube",
-          "url": "https://www.youtube.com",
-          "desc": "全球视频平台"
+          "name": "百度",
+          "url": "https://www.baidu.com",
+          "desc": "中文搜索"
         },
         {
           "name": "维基百科",
           "url": "https://zh.wikipedia.org",
-          "desc": "自由百科全书"
+          "desc": "自由百科全书",
+          "tags": [
+            "wiki",
+            "wikipedia"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "影音",
+      "icon": "play",
+      "links": [
+        {
+          "name": "YouTube",
+          "url": "https://www.youtube.com",
+          "desc": "全球视频平台",
+          "tags": [
+            "油管",
+            "yt"
+          ]
         },
         {
-          "name": "百度",
-          "url": "https://www.baidu.com",
-          "desc": "中文搜索"
+          "name": "哔哩哔哩",
+          "url": "https://www.bilibili.com",
+          "desc": "视频学习与娱乐",
+          "tags": [
+            "b站",
+            "bilibili"
+          ]
+        },
+        {
+          "name": "Netflix",
+          "url": "https://www.netflix.com",
+          "desc": "影视流媒体"
+        },
+        {
+          "name": "Spotify",
+          "url": "https://open.spotify.com",
+          "desc": "在线音乐"
+        },
+        {
+          "name": "Twitch",
+          "url": "https://www.twitch.tv",
+          "desc": "游戏直播"
         }
       ]
     },
@@ -298,12 +505,20 @@
         {
           "name": "草料二维码",
           "url": "https://cli.im",
-          "desc": "二维码生成"
+          "desc": "二维码生成",
+          "tags": [
+            "二维码"
+          ]
         },
         {
-          "name": "IT Dog",
+          "name": "ITDOG",
           "url": "https://www.itdog.cn",
-          "desc": "网络测速与拨测"
+          "desc": "多地测速与拨测",
+          "tags": [
+            "测速",
+            "ping",
+            "拨测"
+          ]
         },
         {
           "name": "Speedtest",
