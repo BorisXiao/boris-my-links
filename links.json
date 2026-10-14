@@ -63,7 +63,8 @@
           "tags": [
             "xhs",
             "rednote"
-          ]
+          ],
+          "icon": "/favicon.ico"
         },
         {
           "name": "微博",
@@ -233,7 +234,8 @@
           "tags": [
             "hf",
             "抱抱脸"
-          ]
+          ],
+          "icon": "/favicon.ico"
         },
         {
           "name": "Google AI Studio",
@@ -342,17 +344,20 @@
         {
           "name": "LINUX DO",
           "url": "https://linux.do",
-          "desc": "中文技术社区新势力"
+          "desc": "中文技术社区新势力",
+          "icon": "/favicon.ico"
         },
         {
           "name": "V2EX",
           "url": "https://www.v2ex.com",
-          "desc": "创意工作者社区"
+          "desc": "创意工作者社区",
+          "icon": "/favicon.ico"
         },
         {
           "name": "Hacker News",
           "url": "https://news.ycombinator.com",
-          "desc": "硅谷技术新闻头条"
+          "desc": "硅谷技术新闻头条",
+          "icon": "/favicon.ico"
         },
         {
           "name": "掘金",
