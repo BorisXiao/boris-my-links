@@ -2122,6 +2122,7 @@
     filtersEl.innerHTML = "";
     cards = [];
     kbIndex = -1;
+    kbEl = null;
 
     var cats = DATA.categories || [];
     if (DATA.title) {
@@ -2320,6 +2321,8 @@
   function setCat(value) {
     var prev = activeCat;
     activeCat = value;
+    /* 切分类会让部分卡片隐藏，键盘焦点必须一并清掉，否则高亮落在不可见元素上 */
+    clearKbFocus();
     Array.prototype.forEach.call(filtersEl.children, function (c) {
       c.setAttribute("aria-pressed", String(c.dataset.value === value));
     });
@@ -2349,6 +2352,7 @@
     });
   }
   function goCat(value) {
+    clearKbFocus();
     activeCat = (value === "all" || cards.some(function (c) { return c.cat === value; })) ? value : "all";
     Array.prototype.forEach.call(filtersEl.children, function (c) {
       c.setAttribute("aria-pressed", String(c.dataset.value === activeCat));
@@ -2446,23 +2450,28 @@
      键盘导航
      ══════════════════════════════════════════════════════════════ */
   function visibleCards() { return cards.filter(function (c) { return !c.el.classList.contains("hide"); }); }
+  /* 记住被聚焦的元素本身，而不是靠「可见列表 + 索引」反查。
+     否则一旦该卡片被筛选隐藏，它已不在可见列表里，高亮就永远清不掉 ——
+     会出现"幽灵高亮"和多个 .kb-focus 同时存在。 */
+  var kbEl = null;
+
   function focusCard(i) {
     var list = visibleCards();
-    if (!list.length) return;
+    if (!list.length) { clearKbFocus(); return; }
     i = Math.max(0, Math.min(i, list.length - 1));
-    if (kbIndex > -1 && list[kbIndex]) list[kbIndex].el.classList.remove("kb-focus");
+    if (kbEl && kbEl !== list[i].el) kbEl.classList.remove("kb-focus");
     kbIndex = i;
     var c = list[i];
     if (document.activeElement === qEl) qEl.blur();
     c.el.classList.add("kb-focus");
+    kbEl = c.el;
     c.el.scrollIntoView({ block: "nearest", behavior: reduceMotion ? "auto" : "smooth" });
     lastTrigger = c.el;
   }
   function clearKbFocus() {
-    if (kbIndex > -1) {
-      var list = visibleCards();
-      if (list[kbIndex]) list[kbIndex].el.classList.remove("kb-focus");
-    }
+    /* 同时清掉所有残留，防止历史遗留的多个高亮 */
+    mainEl.querySelectorAll(".card.kb-focus").forEach(function (el) { el.classList.remove("kb-focus"); });
+    kbEl = null;
     kbIndex = -1;
   }
   function openFocused() {
