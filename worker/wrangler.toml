@@ -1,0 +1,32 @@
+# 「壹页」GitHub OAuth token 交换 Worker 的最小配置
+# 用法：在本目录（worker/）执行 `wrangler deploy`
+#
+# name：部署后的 Worker 名字，线上地址形如
+#       https://yiyi-oauth.<你的-workers-子域>.workers.dev
+name = "yiyi-oauth"
+
+# Worker 入口文件（ES module 语法，必须 export default { fetch })
+main = "worker.js"
+
+# 兼容性日期：固定为这个日期，保证运行时行为不随 Cloudflare 的默认值漂移
+compatibility_date = "2026-10-14"
+
+# 免费套餐即可，不需要 KV / D1 / R2 等任何存储 —— 本 Worker 无状态
+# 不需要 [vars]，因为下面 4 个值全部用 `wrangler secret put` 写成加密变量：
+#
+#   ALLOWED_ORIGIN        唯一允许调用本 Worker 的网页来源，精确匹配，例如
+#                         https://borisxiao.github.io   （来源不含路径，不要写成 .../links/）
+#   GITHUB_CLIENT_ID      GitHub OAuth App 的 Client ID
+#   GITHUB_CLIENT_SECRET  GitHub OAuth App 的 Client Secret（绝密，只存服务端）
+#   ALLOWED_GITHUB_ID     唯一允许提交的 GitHub 数值用户 ID，例如 76441108
+#
+# 逐条设置命令：
+#   wrangler secret put ALLOWED_ORIGIN
+#   wrangler secret put GITHUB_CLIENT_ID
+#   wrangler secret put GITHUB_CLIENT_SECRET
+#   wrangler secret put ALLOWED_GITHUB_ID
+#
+# 说明：如果只想让 ALLOWED_ORIGIN 之类的非机密值明文可见，也可以改用下面的 [vars]，
+# 但本项目的做法是四个值统一走 secret，避免误把 secret 提交进 Git。
+# [vars]
+# ALLOWED_ORIGIN = "https://borisxiao.github.io"

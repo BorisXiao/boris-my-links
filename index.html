@@ -385,6 +385,16 @@
   .add-slot:active { scale: .98; }
 
   /* ── 卡片 ───────────────────────────────────────────────── */
+  /* 无 JS 时不显示这些纯 JS 驱动的控件 */
+  html:not(.js) .totop,
+  html:not(.js) .fab,
+  html:not(.js) .locator,
+  html:not(.js) .gh-badge,
+  html:not(.js) .edit-toggle,
+  html:not(.js) .view-toggle,
+  html:not(.js) .filters-wrap,
+  html:not(.js) .dirty { display: none !important; }
+
   .card {
     position: relative;
     display: flex; align-items: center; gap: 13px;
@@ -562,7 +572,10 @@
   footer a:hover { color: var(--accent); }
 
   /* ── 骨架 ───────────────────────────────────────────────── */
-  .skeleton { display: grid; grid-template-columns: repeat(auto-fill, minmax(258px, 1fr)); gap: 13px; }
+  /* 默认隐藏：由 JS 在启动时加 .loading 显示。
+     否则禁用 JS 时骨架屏会永远停留在加载动画上。 */
+  .skeleton { display: none; grid-template-columns: repeat(auto-fill, minmax(258px, 1fr)); gap: 13px; }
+  html.js .skeleton { display: grid; }
   .sk { height: 70px; border-radius: var(--r-card); background: var(--card); position: relative; overflow: hidden; }
   .sk::after {
     content: ""; position: absolute; inset: 0;
@@ -725,6 +738,203 @@
     .reveal { opacity: 1; transform: none; }
     .card:hover { transform: none; }
   }
+
+  /* ══════════════════════════════════════════════════════════
+     新增：收藏 + 视图切换 + 键盘导航
+     ══════════════════════════════════════════════════════════ */
+
+  /* 星标按钮：默认藏在卡片右上，悬停或已收藏时显现 */
+  .star {
+    position: absolute; top: 5px; right: 5px;
+    width: 26px; height: 26px;
+    display: grid; place-items: center;
+    background: none; border: 0; border-radius: 7px;
+    color: var(--t3); cursor: pointer;
+    opacity: 0;
+    transition: opacity var(--fast) var(--e-out), color var(--fast), background var(--fast),
+                scale var(--fast) var(--e-spring);
+  }
+  .star svg { width: 14px; height: 14px; }
+  .card:hover .star, .star.on, .star:focus-visible { opacity: 1; }
+  .star:hover { background: var(--accent-soft); color: var(--accent); }
+  .star.on { color: #f5a623; }
+  .star.on svg { fill: #f5a623; stroke: #f5a623; }
+  .star:active { scale: .85; }
+
+  /* 已收藏卡片：左侧一道细金线，不打扰但一眼可辨 */
+  .card.starred { border-color: color-mix(in srgb, #f5a623 34%, var(--line)); }
+  .card.starred::after {
+    content: ""; position: absolute; left: 0; top: 14px; bottom: 14px;
+    width: 2.5px; border-radius: 0 3px 3px 0;
+    background: #f5a623;
+  }
+
+  /* 「常用」置顶分组：带淡金底以区别于普通分类 */
+  section.pinned-sec {
+    padding: 18px 18px 14px;
+    margin-bottom: 44px;
+    border-radius: 22px;
+    background: color-mix(in srgb, #f5a623 6%, transparent);
+    border: 1px solid color-mix(in srgb, #f5a623 22%, transparent);
+  }
+  section.pinned-sec .sec-head h2 { color: var(--t1); }
+  .pin-hint {
+    font-size: 12.5px; color: var(--t3);
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .pin-hint svg { width: 13px; height: 13px; }
+
+  /* 键盘焦点环：方向键导航时必须看得见 */
+  .card.kb-focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3.5px var(--accent-soft), var(--sh-2);
+    transform: translateY(-3px) scale(1.006);
+  }
+  .card.kb-focus::before { opacity: 1; }
+
+  /* 移动端筛选条右侧渐隐：提示"右边还有内容" */
+  .filters-wrap { position: sticky; }
+  .filters-wrap::after {
+    content: ""; position: absolute; top: 0; right: 0; bottom: 0;
+    width: 52px; pointer-events: none;
+    background: linear-gradient(90deg, transparent, var(--bg) 82%);
+    opacity: 0; transition: opacity var(--mid) var(--e-out);
+  }
+  .filters-wrap.can-scroll-right::after { opacity: 1; }
+  .filters-wrap.at-start::before {
+    content: ""; position: absolute; top: 0; left: 0; bottom: 0;
+    width: 40px; pointer-events: none; z-index: 1;
+    background: linear-gradient(270deg, transparent, var(--bg) 82%);
+  }
+
+  /* 视图切换（网格 / 紧凑列表） */
+  .view-toggle { display: inline-flex; gap: 2px; padding: 2px; border-radius: 9px; background: var(--line); }
+  .view-toggle button {
+    width: 28px; height: 26px;
+    display: grid; place-items: center;
+    background: none; border: 0; border-radius: 7px;
+    color: var(--t3); cursor: pointer;
+    transition: background var(--fast), color var(--fast);
+  }
+  .view-toggle button svg { width: 14px; height: 14px; }
+  .view-toggle button[aria-pressed="true"] { background: var(--card); color: var(--t1); box-shadow: var(--sh-1); }
+
+  /* 紧凑列表模式：一屏看更多 */
+  body.view-list .grid { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 7px; }
+  body.view-list .card { padding: 9px 14px 9px 12px; border-radius: 12px; }
+  body.view-list .avatar { width: 26px; height: 26px; border-radius: 8px; }
+  body.view-list .avatar img { width: 16px; height: 16px; }
+  body.view-list .avatar .fb { font-size: 12px; }
+  body.view-list .info .d { display: none; }
+  body.view-list .info .t { font-size: 14px; }
+  body.view-list .star { top: 50%; translate: 0 -50%; right: 44px; }
+
+  /* 卡片上移 / 下移（触屏排序用，因为 HTML5 拖拽在触屏不可靠） */
+  .nudge { display: none; flex-direction: column; gap: 0; }
+  body.editing .nudge { display: flex; }
+  body.editing.on-touch .nudge { flex-direction: row; }
+  .nudge button {
+    width: 22px; height: 17px; display: grid; place-items: center;
+    background: none; border: 0; border-radius: 5px;
+    color: var(--t3); cursor: pointer;
+    transition: background var(--fast), color var(--fast);
+  }
+  .nudge button:hover { background: var(--accent-soft); color: var(--accent); }
+  .nudge button:disabled { opacity: .25; cursor: default; }
+  .nudge button:disabled:hover { background: none; color: var(--t3); }
+  .nudge svg { width: 12px; height: 12px; }
+
+  /* 「添加站点」悬浮按钮：免去滚动到分类末尾 */
+  .fab {
+    position: fixed; right: 28px; bottom: 84px; z-index: 96;
+    display: none; align-items: center; gap: 7px;
+    height: 42px; padding: 0 17px;
+    font-size: 14px; font-weight: 540;
+    color: #fff; background: var(--accent);
+    border: 0; border-radius: var(--r-pill);
+    box-shadow: var(--sh-2); cursor: pointer;
+    transition: transform var(--fast) var(--e-spring), filter var(--fast), opacity var(--mid);
+  }
+  body.editing .fab { display: inline-flex; }
+  .fab:hover { filter: brightness(1.08); transform: translateY(-2px); }
+  .fab:active { transform: scale(.96); }
+  .fab svg { width: 15px; height: 15px; }
+
+  /* 吸顶的分类定位条 */
+  .locator {
+    position: fixed; top: 15px; left: 50%; translate: -50% 0; z-index: 98;
+    display: none; align-items: center; gap: 8px;
+    height: 30px; padding: 0 13px;
+    font-size: 13px; font-weight: 540; color: var(--t1);
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: var(--r-pill); box-shadow: var(--sh-2);
+    cursor: pointer;
+    opacity: 0; transform: translateY(-8px);
+    transition: opacity var(--mid) var(--e-out), transform var(--mid) var(--e-out);
+  }
+  .locator.show { display: inline-flex; opacity: 1; transform: translateY(0); }
+  .locator svg { width: 13px; height: 13px; color: var(--t3); }
+  .locator:hover { border-color: var(--line-strong); }
+
+  /* 分类跳转面板 */
+  .jump {
+    position: fixed; inset: 0; z-index: 199;
+    display: none; justify-content: center;
+    padding: 66px 16px 16px;
+    background: rgba(0,0,0,.30);
+    backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
+  }
+  .jump.show { display: flex; animation: fade .16s var(--e-out); }
+  .jump-panel {
+    width: 100%; max-width: 320px; align-self: flex-start;
+    max-height: 70vh; overflow-y: auto;
+    background: var(--bg); border: 1px solid var(--line);
+    border-radius: 16px; box-shadow: var(--sh-modal);
+    padding: 8px;
+    animation: rise .24s var(--e-spring) both;
+  }
+  .jump-item {
+    display: flex; align-items: center; gap: 10px; width: 100%;
+    padding: 10px 12px;
+    background: none; border: 0; border-radius: 10px;
+    font-size: 14px; color: var(--t1); text-align: left;
+    cursor: pointer;
+    transition: background var(--fast);
+  }
+  .jump-item:hover { background: var(--accent-soft); }
+  .jump-item .cnt { margin-left: auto; font-size: 12.5px; color: var(--t3); }
+  .jump-item.cur { color: var(--accent); font-weight: 600; }
+
+  /* GitHub 连接状态 */
+  .gh-badge {
+    display: none; align-items: center; gap: 6px;
+    height: 32px; padding: 0 11px;
+    font-size: 12.5px; font-weight: 520;
+    color: var(--t2);
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: var(--r-pill); cursor: pointer; white-space: nowrap;
+    transition: border-color var(--fast), color var(--fast);
+  }
+  .gh-badge.show { display: inline-flex; }
+  .gh-badge:hover { border-color: var(--line-strong); color: var(--t1); }
+  .gh-badge svg { width: 14px; height: 14px; }
+  .gh-badge.on { color: #34c759; border-color: color-mix(in srgb, #34c759 40%, transparent); }
+  .gh-badge.on svg { color: #34c759; }
+
+  /* 提示条上的按钮组 */
+  .dirty-actions { margin-left: auto; display: flex; gap: 7px; flex-wrap: wrap; }
+
+  /* 顶栏在小屏下的取舍 */
+  @media (max-width: 760px) {
+    .gh-badge .lbl { display: none; }
+    .view-toggle { display: none; }
+    .fab { right: 16px; bottom: 74px; height: 40px; padding: 0 14px; }
+    .locator { top: 12px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .star, .fab, .locator { transition: none !important; }
+  }
 </style>
 </head>
 <body>
@@ -743,6 +953,28 @@
         <span class="kbd">/</span>
         <button class="clear" id="clear" type="button" aria-label="清空搜索">&times;</button>
       </div>
+
+      <div class="view-toggle" id="viewToggle" role="group" aria-label="切换视图">
+        <button type="button" id="viewGrid" aria-pressed="true" title="网格视图" aria-label="网格视图">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>
+            <rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>
+          </svg>
+        </button>
+        <button type="button" id="viewList" aria-pressed="false" title="紧凑列表" aria-label="紧凑列表">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M4 6h16M4 12h16M4 18h16"/>
+          </svg>
+        </button>
+      </div>
+
+      <button class="gh-badge" id="ghBadge" type="button" title="GitHub 连接状态">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 4.5-1.4 4.5-4.7a3.7 3.7 0 0 0-1-2.6c.1-.3.5-1.4 0-2.6 0 0-1.1-.3-3.5 1.3a8.6 8.6 0 0 0-4.5 0C7.6 3.3 6.5 3.6 6.5 3.6c-.5 1.2-.1 2.3 0 2.6a3.7 3.7 0 0 0-1 2.6c0 3.3 1.7 4.4 4.5 4.7-.6.6-.6 1.2-.5 2V21"/>
+        </svg>
+        <span class="lbl" id="ghBadgeText">未连接</span>
+      </button>
+
       <button class="icon-btn" id="theme" type="button" aria-label="切换深色模式" title="切换深色模式">
         <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
           <circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6"/>
@@ -751,6 +983,7 @@
           <path d="M20.7 13.2A8.6 8.6 0 1 1 10.8 3.3a6.7 6.7 0 0 0 9.9 9.9z"/>
         </svg>
       </button>
+
       <button class="edit-toggle" id="editToggle" type="button" aria-pressed="false">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>
@@ -761,6 +994,17 @@
     </div>
   </div>
 </nav>
+
+<button class="locator" id="locator" type="button" aria-label="跳转到分类">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+    <path d="M4 6h16M4 12h16M4 18h16"/>
+  </svg>
+  <span id="locatorText"></span>
+</button>
+
+<div class="jump" id="jump" role="dialog" aria-label="分类跳转">
+  <div class="jump-panel" id="jumpPanel"></div>
+</div>
 
 <header class="hero" id="top">
   <div class="aurora"></div>
@@ -773,13 +1017,17 @@
 
 <div class="dirty" id="dirty">
   <div class="dirty-inner">
-    <span>当前显示的是<strong>本机编辑</strong>的内容，与线上 <code>links.json</code> 不一致。</span>
+    <span id="dirtyText">当前显示的是<strong>本机编辑</strong>的内容，与线上 <code>links.json</code> 不一致。</span>
     <span class="dirty-actions">
+      <button class="btn primary" id="btnPush" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V9M7 14l5-5 5 5M5 3h14"/></svg>
+        <span id="btnPushText">提交到 GitHub</span>
+      </button>
       <button class="btn" id="btnExport2" type="button">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
         导出
       </button>
-      <button class="btn ghost" id="btnReset2" type="button">恢复线上版本</button>
+      <button class="btn ghost" id="btnReset2" type="button">恢复线上</button>
     </span>
   </div>
 </div>
@@ -793,6 +1041,13 @@
     <div class="sk"></div><div class="sk"></div><div class="sk"></div>
     <div class="sk"></div><div class="sk"></div><div class="sk"></div>
   </div>
+  <noscript>
+    <div class="empty show" style="display:block">
+      <h3>需要启用 JavaScript</h3>
+      <p>本页通过 JS 读取并渲染 <code>links.json</code>。<br>
+      未启用 JS 时可直接访问 <a href="links.json">links.json</a> 查看原始数据。</p>
+    </div>
+  </noscript>
 </main>
 
 <div class="empty" id="empty">
@@ -803,6 +1058,11 @@
   <p id="emptyHint">换个关键词试试，或点「全部」查看所有站点。</p>
 </div>
 
+<button class="fab" id="fab" type="button">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+  添加站点
+</button>
+
 <button class="totop" id="totop" type="button" aria-label="回到顶部">
   <svg class="ring" viewBox="0 0 46 46" aria-hidden="true"><circle cx="23" cy="23" r="22"/></svg>
   <svg class="arrowup" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -810,39 +1070,9 @@
   </svg>
 </button>
 
-<!-- 链接 / 分类 编辑弹窗 -->
 <div class="modal-mask" id="mask">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle">
-    <div class="modal-head">
-      <h3 id="mTitle">编辑站点</h3>
-      <button class="modal-close" id="mClose" type="button" aria-label="关闭">&times;</button>
-    </div>
-    <div class="modal-body">
-      <div class="field" id="fName">
-        <label for="iName" id="lName">名称</label>
-        <input id="iName" type="text" autocomplete="off" spellcheck="false">
-        <div class="err" id="eName">请填写名称</div>
-      </div>
-      <div class="field" id="fUrl">
-        <label for="iUrl" id="lUrl">网址</label>
-        <input id="iUrl" type="text" autocomplete="off" spellcheck="false" placeholder="https://example.com">
-        <div class="err" id="eUrl">请填写合法网址，需以 http:// 或 https:// 开头</div>
-      </div>
-      <div class="field" id="fDesc">
-        <label for="iDesc">描述 <span class="opt">（可空）</span></label>
-        <input id="iDesc" type="text" autocomplete="off" spellcheck="false">
-        <div class="hint">留空则卡片第二行显示域名</div>
-      </div>
-      <div class="field" id="fTags">
-        <label for="iTags">搜索别名 <span class="opt">（可空，逗号分隔）</span></label>
-        <input id="iTags" type="text" autocomplete="off" spellcheck="false" placeholder="油管, yt">
-        <div class="hint">只参与搜索、不显示在页面上</div>
-      </div>
-    </div>
-    <div class="modal-foot">
-      <button class="btn danger" id="mDelete" type="button">删除</button>
-      <button class="btn primary" id="mSave" type="button">保存</button>
-    </div>
+  <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+    <div id="modalBody"></div>
   </div>
 </div>
 
@@ -850,46 +1080,66 @@
 
 <footer>
   <span id="footCount"></span>
-  <span>按 <b style="font-weight:600">/</b> 搜索 · 数据来自 <a href="links.json" target="_blank" rel="noopener">links.json</a></span>
+  <span>
+    <button class="btn ghost" id="kbdHelp" type="button" style="padding:2px 8px;font-size:12.5px">快捷键</button>
+    · 数据来自 <a href="links.json" target="_blank" rel="noopener">links.json</a>
+  </span>
 </footer>
 
 <script>
 (function () {
   "use strict";
 
+  /* 最早时刻标记「JS 可用」，让骨架屏与各类控件显隐有依据 */
+  document.documentElement.classList.add("js");
+
+  /* ══════════════════════════════════════════════════════════════
+     常量与工具
+     ══════════════════════════════════════════════════════════════ */
   var root = document.documentElement;
   var $ = function (id) { return document.getElementById(id); };
   var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  var THEME_KEY = "links-theme";
-  var STORE_KEY = "links-data-v1";
   var SVG_NS = "http://www.w3.org/2000/svg";
 
-  /* ══════════════ 主题 ══════════════ */
-  var savedTheme = null;
-  try { savedTheme = localStorage.getItem(THEME_KEY); } catch (e) {}
-  var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-  root.setAttribute("data-theme", savedTheme || (prefersDark ? "dark" : "light"));
+  var K_THEME = "links-theme";
+  var K_DATA  = "links-data-v1";   // 本机编辑后的完整数据
+  var K_UI    = "links-ui-v1";     // 界面偏好：收藏、最近、视图、隐藏
+  var K_GH    = "links-gh-v1";     // GitHub 连接信息
+  var K_ICON  = "links-icon-cache-v1";
 
-  $("theme").addEventListener("click", function () {
-    var next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
-    root.setAttribute("data-theme", next);
-    try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
-  });
+  /* 目标仓库：由 links.json 的 repo 字段覆盖，默认按当前仓库 */
+  var DEFAULT_REPO = { owner: "BorisXiao", name: "links", branch: "main", path: "links.json" };
 
-  /* ══════════════ 基础工具 ══════════════ */
   var PALETTE = ["#0071e3", "#af52de", "#ff375f", "#ff9f0a", "#30d158", "#40c8e0", "#5e5ce6", "#ff6482"];
   var PATH = {
-    edit:  "M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z",
-    trash: "M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6",
-    grip:  "M9 5h.01M9 12h.01M9 19h.01M15 5h.01M15 12h.01M15 19h.01",
-    arrow: "M5 12h13M13 6l6 6-6 6",
-    plus:  "M12 5v14M5 12h14",
+    edit:   "M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z",
+    trash:  "M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6",
+    grip:   "M9 5h.01M9 12h.01M9 19h.01M15 5h.01M15 12h.01M15 19h.01",
+    arrow:  "M5 12h13M13 6l6 6-6 6",
+    plus:   "M12 5v14M5 12h14",
     download: "M12 3v12M7 10l5 5 5-5M5 21h14",
-    check: "M20 6L9 17l-5-5",
-    alert: "M12 8v5M12 17h.01M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"
+    upload: "M12 21V9M7 14l5-5 5 5M5 3h14",
+    check:  "M20 6L9 17l-5-5",
+    alert:  "M12 8v5M12 17h.01M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z",
+    star:   "M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9-5.2-2.8-5.2 2.8 1-5.9L3.5 9.7l5.9-.8z",
+    up:     "M12 19V6M6 12l6-6 6 6",
+    down:   "M12 5v13M18 12l-6 6-6-6",
+    search: "M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM20 20l-4-4",
+    copy:   "M9 9h10v10H9zM5 15H4V5h10v1",
+    shuffle:"M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5",
+    x:      "M18 6L6 18M6 6l12 12",
+    key:    "M15.5 8.5a3.5 3.5 0 1 0-3.4 3.5L11 13H9v2H7v2H4v-3l6.1-6.1a3.5 3.5 0 0 1 5.4-1.4z",
+    cloud:  "M17.5 19a4.5 4.5 0 0 0 .5-9 6 6 0 0 0-11.6 1.5A3.8 3.8 0 0 0 7 19z",
+    refresh:"M21 12a9 9 0 1 1-2.6-6.4M21 3v6h-6"
   };
 
-  function svgIcon(d, w) {
+  function mk(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+  function svgIcon(d, w, cls) {
     var s = document.createElementNS(SVG_NS, "svg");
     s.setAttribute("viewBox", "0 0 24 24");
     s.setAttribute("fill", "none");
@@ -898,24 +1148,25 @@
     s.setAttribute("stroke-linecap", "round");
     s.setAttribute("stroke-linejoin", "round");
     s.setAttribute("aria-hidden", "true");
+    if (cls) s.setAttribute("class", cls);
     var p = document.createElementNS(SVG_NS, "path");
     p.setAttribute("d", d);
     s.appendChild(p);
     return s;
-  }
-  function hostOf(url) {
-    try { return new URL(url).hostname.replace(/^www\./, ""); } catch (e) { return ""; }
-  }
-  function colorOf(s) {
-    var h = 0;
-    for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
-    return PALETTE[h % PALETTE.length];
   }
   function esc(s) {
     return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
     });
   }
+  function hostOf(url) {
+    try { return new URL(url).hostname.replace(/^www\./, ""); } catch (e) { return ""; }
+  }
+  function colorOf(s) {
+    var h = 0; for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+    return PALETTE[h % PALETTE.length];
+  }
+  function clone(o) { return JSON.parse(JSON.stringify(o)); }
   function highlight(text, q) {
     var safe = esc(text);
     if (!q) return safe;
@@ -923,75 +1174,762 @@
     if (i === -1) return safe;
     return safe.slice(0, i) + "<mark>" + safe.slice(i, i + q.length) + "</mark>" + safe.slice(i + q.length);
   }
-  function clone(o) { return JSON.parse(JSON.stringify(o)); }
-  function catByName(name) {
-    for (var i = 0; i < DATA.categories.length; i++) {
-      if (DATA.categories[i].name === name) return DATA.categories[i];
-    }
-    return null;
-  }
+  function safeGet(store, k) { try { return store.getItem(k); } catch (e) { return null; } }
+  function safeSet(store, k, v) { try { store.setItem(k, v); return true; } catch (e) { return false; } }
+  function safeDel(store, k) { try { store.removeItem(k); } catch (e) {} }
+  function isTouch() { return window.matchMedia && window.matchMedia("(hover: none)").matches; }
 
-  /* ══════════════ 轻提示 ══════════════ */
-  var toastWrap = $("toasts");
-  function toast(msg, kind) {
-    var t = document.createElement("div");
-    t.className = "toast " + (kind === "err" ? "err" : "ok");
-    t.appendChild(svgIcon(kind === "err" ? PATH.alert : PATH.check));
-    var sp = document.createElement("span");
-    sp.textContent = msg;
-    t.appendChild(sp);
-    toastWrap.appendChild(t);
-    setTimeout(function () {
-      t.classList.add("out");
-      setTimeout(function () { t.remove(); }, 260);
-    }, 2100);
-  }
+  /* ══════════════════════════════════════════════════════════════
+     状态
+     ══════════════════════════════════════════════════════════════ */
+  var BASE = { title: "壹页", subtitle: "", categories: [] };   // 线上 links.json
+  var DATA = { title: "壹页", subtitle: "", categories: [] };   // 当前生效数据（可能含本机编辑）
+  var REPO = clone(DEFAULT_REPO);                               // 提交目标仓库
+  var AUTH = null;                                              // links.json 里的 OAuth 配置
+  var UI = { starred: [], recent: [], view: "grid", hidden: [] };
+  var GH = { token: "", method: "", login: "" };                // GitHub 连接
 
-  /* ══════════════ 状态 ══════════════ */
-  var BASE = { title: "壹页", subtitle: "", categories: [] };   // 线上 links.json 原样
-  var DATA = { title: "壹页", subtitle: "", categories: [] };   // 当前生效（可能是本机编辑版）
   var editing = false;
   var activeCat = "all";
   var query = "";
   var cards = [];
+  var pinnedCat = "__pinned__";
+  var recentCat = "__recent__";
   var pendingSec = null;
+  var kbIndex = -1;
+  var lastTrigger = null;
 
   var mainEl = $("main"), filtersEl = $("filters"), emptyEl = $("empty");
   var qEl = $("q"), searchbox = $("searchbox");
   var secObserver = (!reduceMotion && "IntersectionObserver" in window)
-    ? new IntersectionObserver(function (entries) {
-        entries.forEach(function (en) {
+    ? new IntersectionObserver(function (es) {
+        es.forEach(function (en) {
           if (en.isIntersecting) { en.target.classList.add("in"); secObserver.unobserve(en.target); }
         });
       }, { rootMargin: "140px 0px 0px 0px", threshold: 0 })
     : null;
 
-  /* ══════════════ 本机持久化 ══════════════ */
-  function readLocal() {
+  /* ══════════════════════════════════════════════════════════════
+     持久化
+     ══════════════════════════════════════════════════════════════ */
+  function loadUI() {
+    var raw = safeGet(localStorage, K_UI);
+    if (!raw) return;
     try {
-      var raw = localStorage.getItem(STORE_KEY);
-      if (!raw) return null;
       var d = JSON.parse(raw);
-      return (d && Array.isArray(d.categories)) ? d : null;
-    } catch (e) { return null; }
+      if (Array.isArray(d.starred)) UI.starred = d.starred;
+      if (Array.isArray(d.recent)) UI.recent = d.recent;
+      if (Array.isArray(d.hidden)) UI.hidden = d.hidden;
+      if (d.view === "list" || d.view === "grid") UI.view = d.view;
+    } catch (e) {}
+  }
+  function saveUI() {
+    safeSet(localStorage, K_UI, JSON.stringify(UI));
+  }
+  function loadLocal() {
+    var raw = safeGet(localStorage, K_DATA);
+    if (!raw) return null;
+    try { var d = JSON.parse(raw); return (d && Array.isArray(d.categories)) ? d : null; } catch (e) { return null; }
   }
   function persist() {
-    DATA.title = DATA.title || "壹页";
-    try {
-      localStorage.setItem(STORE_KEY, JSON.stringify(DATA));
-      document.body.classList.add("has-local");
-    } catch (e) { toast("本机存储写入失败", "err"); }
+    if (!safeSet(localStorage, K_DATA, JSON.stringify(DATA))) {
+      toast("本机存储写入失败（可能空间已满）", "err");
+    }
+    document.body.classList.add("has-local");
   }
   function dropLocal() {
-    try { localStorage.removeItem(STORE_KEY); } catch (e) {}
+    safeDel(localStorage, K_DATA);
+    safeDel(localStorage, K_UI);
+  }
+  function loadGH() {
+    var raw = safeGet(localStorage, K_GH);
+    if (!raw) return;
+    try {
+      var d = JSON.parse(raw);
+      if (d && d.token) { GH.token = d.token; GH.method = d.method || "pat"; GH.login = d.login || ""; }
+    } catch (e) {}
+  }
+  function saveGH() { safeSet(localStorage, K_GH, JSON.stringify(GH)); }
+  function dropGH() { safeDel(localStorage, K_GH); GH = { token: "", method: "", login: "" }; }
+
+  /* 图标缓存：减少重复请求，降低闪烁 */
+  var iconCache = {};
+  (function loadIconCache() {
+    var raw = safeGet(localStorage, K_ICON);
+    if (raw) { try { iconCache = JSON.parse(raw) || {}; } catch (e) { iconCache = {}; } }
+  })();
+  var iconCacheDirty = false;
+  function saveIconCache() {
+    if (!iconCacheDirty) return;
+    iconCacheDirty = false;
+    var keys = Object.keys(iconCache);
+    if (keys.length > 200) {  // 控制体积，超量丢最旧的
+      var trimmed = {};
+      keys.slice(-160).forEach(function (k) { trimmed[k] = iconCache[k]; });
+      iconCache = trimmed;
+    }
+    if (!safeSet(localStorage, K_ICON, JSON.stringify(iconCache))) iconCache = {};
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     主题（带 View Transitions 动画）
+     ══════════════════════════════════════════════════════════════ */
+  var savedTheme = safeGet(localStorage, K_THEME);
+  var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  root.setAttribute("data-theme", savedTheme || (prefersDark ? "dark" : "light"));
+
+  $("theme").addEventListener("click", function (e) {
+    var next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    function apply() {
+      root.setAttribute("data-theme", next);
+      safeSet(localStorage, K_THEME, next);
+    }
+    if (!reduceMotion && document.startViewTransition) {
+      /* 从按钮位置扩散的圆形揭示，比瞬变自然 */
+      var r = e.currentTarget.getBoundingClientRect();
+      var cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+      var far = Math.hypot(Math.max(cx, innerWidth - cx), Math.max(cy, innerHeight - cy));
+      var t = document.startViewTransition(apply);
+      t.ready.then(function () {
+        document.documentElement.animate(
+          { clipPath: ["circle(0px at " + cx + "px " + cy + "px)", "circle(" + far + "px at " + cx + "px " + cy + "px)"] },
+          { duration: 460, easing: "cubic-bezier(.22,1,.36,1)", pseudoElement: "::view-transition-new(root)" }
+        );
+      }).catch(function () {});
+    } else apply();
+  });
+
+  /* ══════════════════════════════════════════════════════════════
+     轻提示
+     ══════════════════════════════════════════════════════════════ */
+  var toastWrap = $("toasts");
+  function toast(msg, kind, ms) {
+    var t = mk("div", "toast " + (kind === "err" ? "err" : "ok"));
+    t.appendChild(svgIcon(kind === "err" ? PATH.alert : PATH.check));
+    t.appendChild(mk("span", null, msg));
+    toastWrap.appendChild(t);
+    setTimeout(function () {
+      t.classList.add("out");
+      setTimeout(function () { t.remove(); }, 260);
+    }, ms || 2200);
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     通用弹窗（链接 / 分类 / 确认 / GitHub / 批量导入 / 快捷键）
+     ══════════════════════════════════════════════════════════════ */
+  var mask = $("mask"), modalBody = $("modalBody");
+  var modalOpen = false, modalCleanup = null;
+
+  function openModal(title, buildBody, opts) {
+    opts = opts || {};
+    lastTrigger = document.activeElement;
+    modalBody.innerHTML = "";
+
+    var head = mk("div", "modal-head");
+    head.appendChild(mk("h3", null, title)).id = "mTitle";
+    var close = mk("button", "modal-close", "\u00d7");
+    close.type = "button"; close.setAttribute("aria-label", "关闭");
+    head.appendChild(close);
+    modalBody.appendChild(head);
+
+    var body = mk("div", "modal-body");
+    modalBody.appendChild(body);
+
+    var foot = mk("div", "modal-foot");
+    modalBody.appendChild(foot);
+
+    modalCleanup = buildBody(body, foot) || null;
+
+    mask.classList.add("show");
+    document.body.classList.add("no-scroll");
+    modalOpen = true;
+
+    close.addEventListener("click", closeModal);
+    var focusTarget = modalBody.querySelector("[data-autofocus]") || modalBody.querySelector("input,button");
+    if (focusTarget) setTimeout(function () { focusTarget.focus(); if (focusTarget.select) try { focusTarget.select(); } catch (e) {} }, 50);
+    if (opts.wide) $("modal").style.maxWidth = "560px"; else $("modal").style.maxWidth = "";
+  }
+  function closeModal() {
+    if (!modalOpen) return;
+    modalOpen = false;
+    if (typeof modalCleanup === "function") try { modalCleanup(); } catch (e) {}
+    modalCleanup = null;
+    mask.classList.remove("show");
+    document.body.classList.remove("no-scroll");
+    /* 焦点归还给触发元素 —— 键盘用户不该被丢回 body */
+    if (lastTrigger && lastTrigger.focus && document.contains(lastTrigger)) {
+      try { lastTrigger.focus(); } catch (e) {}
+    }
+    lastTrigger = null;
+  }
+  mask.addEventListener("click", function (e) { if (e.target === mask) closeModal(); });
+
+  /* 焦点陷阱：Tab 不应跑到背景 */
+  modalBody.addEventListener("keydown", function (e) {
+    if (e.key !== "Tab") return;
+    var f = modalBody.querySelectorAll('input,button,textarea,select,a[href],[tabindex]:not([tabindex="-1"])');
+    f = Array.prototype.filter.call(f, function (n) { return !n.disabled && n.offsetParent !== null; });
+    if (!f.length) return;
+    var first = f[0], last = f[f.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  });
+
+  var fieldSeq = 0;
+  function field(labelText, hint) {
+    var f = mk("div", "field");
+    var fid = "fld" + (++fieldSeq);
+    var l = mk("label", null, labelText);
+    l.setAttribute("for", fid);
+    f.appendChild(l);
+    var i = mk("input");
+    i.id = fid; i.type = "text"; i.autocomplete = "off"; i.spellcheck = false;
+    f.appendChild(i);
+    if (hint) { var h = mk("div", "hint", hint); f.appendChild(h); }
+    return { wrap: f, input: i, label: l };
+  }
+  function btn(label, cls, iconD) {
+    var b = mk("button", "btn " + (cls || ""));
+    b.type = "button";
+    if (iconD) b.appendChild(svgIcon(iconD));
+    if (label) b.appendChild(mk("span", null, label));
+    return b;
+  }
+  function modalNote(text) { var d = mk("div", "modal-note"); d.innerHTML = text; return d; }
+
+  /* ── 链接编辑 ── */
+  function openLinkModal(catName, idx) {
+    var cat = catByName(catName);
+    if (!cat) return;
+    var link = idx >= 0 ? cat.links[idx] : null;
+    openModal(idx >= 0 ? "编辑站点" : "添加站点", function (body, foot) {
+      var fName = field("名称"); fName.input.value = link ? (link.name || "") : "";
+      fName.input.setAttribute("data-autofocus", "");
+      var fUrl = field("网址"); fUrl.input.value = link ? (link.url || "") : "https://";
+      var fDesc = field("描述（可空）", "留空则卡片第二行显示域名"); fDesc.input.value = (link && link.desc) || "";
+      var fTags = field("搜索别名（可空，逗号分隔）", "只参与搜索、不显示在页面上");
+      fTags.input.value = (link && Array.isArray(link.tags)) ? link.tags.join(", ") : "";
+      [fName, fUrl, fDesc, fTags].forEach(function (f) { body.appendChild(f.wrap); });
+
+      if (idx >= 0) {
+        var del = btn("删除", "danger", PATH.trash);
+        del.addEventListener("click", function () {
+          var label = link.name || link.url;
+          closeModal();
+          askConfirm("删除站点", "确定删除「" + label + "」？此操作只影响本机编辑内容。", "删除", function () {
+            cat.links.splice(idx, 1);
+            persist(); render(); toast("已删除「" + label + "」");
+          });
+        });
+        foot.appendChild(del);
+      }
+      var save = btn("保存", "primary");
+      save.addEventListener("click", function () {
+        var name = fName.input.value.trim();
+        if (!name) { fName.wrap.classList.add("bad"); fName.input.focus(); return; }
+        fName.wrap.classList.remove("bad");
+        var url = fUrl.input.value.trim();
+        if (!/^https?:\/\/[^\s]+$/i.test(url)) { fUrl.wrap.classList.add("bad"); fUrl.input.focus(); return; }
+        fUrl.wrap.classList.remove("bad");
+        var tags = fTags.input.value.split(/[,，]/).map(function (s) { return s.trim(); }).filter(Boolean);
+        if (idx >= 0) {
+          link.name = name; link.url = url; link.desc = fDesc.input.value.trim();
+          if (tags.length) link.tags = tags; else delete link.tags;
+          toast("已保存「" + name + "」");
+        } else {
+          var item = { name: name, url: url };
+          var d = fDesc.input.value.trim();
+          if (d) item.desc = d;
+          if (tags.length) item.tags = tags;
+          cat.links.push(item);
+          toast("已添加「" + name + "」");
+        }
+        persist(); closeModal(); render();
+      });
+      foot.appendChild(save);
+    });
+  }
+
+  /* ── 分类编辑 ── */
+  function openCatModal(ci) {
+    var isNew = ci < 0;
+    openModal(isNew ? "添加分类" : "重命名分类", function (body, foot) {
+      var fName = field("分类名称");
+      fName.input.value = isNew ? "" : DATA.categories[ci].name;
+      fName.input.setAttribute("data-autofocus", "");
+      body.appendChild(fName.wrap);
+      var save = btn("保存", "primary");
+      save.addEventListener("click", function () {
+        var name = fName.input.value.trim();
+        if (!name) { fName.wrap.classList.add("bad"); fName.input.focus(); return; }
+        var dup = DATA.categories.some(function (c, i) { return c.name === name && i !== ci; });
+        if (dup) { toast("已存在同名分类", "err"); return; }
+        if (isNew) {
+          DATA.categories.push({ name: name, links: [] });
+          toast("已添加分类「" + name + "」");
+        } else {
+          var old = DATA.categories[ci].name;
+          DATA.categories[ci].name = name;
+          if (activeCat === old) activeCat = name;
+          if (UI.starred.length) { /* 收藏是按 url 记录，分类改名无需迁移 */ }
+          toast("已重命名");
+        }
+        persist(); closeModal(); render();
+      });
+      foot.appendChild(save);
+    });
+  }
+
+  /* ── 通用确认 ── */
+  function askConfirm(title, msg, cta, onOk) {
+    openModal(title, function (body, foot) {
+      var p = mk("p", null, msg);
+      p.style.cssText = "margin:0 0 6px;font-size:14.5px;line-height:1.6;color:var(--t1)";
+      body.appendChild(p);
+      var b = btn(cta || "确定", "primary");
+      b.addEventListener("click", function () { closeModal(); onOk(); });
+      foot.appendChild(b);
+      var cancel = btn("取消", "ghost");
+      cancel.addEventListener("click", closeModal);
+      foot.insertBefore(cancel, b);
+    });
+  }
+
+  /* ── 快捷键说明 ── */
+  function openKbdHelp() {
+    openModal("键盘快捷键", function (body, foot) {
+      var rows = [
+        ["/", "聚焦搜索框"],
+        ["↓", "从搜索框进入结果列表"],
+        ["↑ ↓ ← →", "在卡片间移动"],
+        ["Enter", "打开当前选中的站点"],
+        ["Esc", "退出键盘导航 / 清空搜索 / 关闭弹窗"],
+        ["g", "打开分类跳转（导航态）"],
+        ["t", "切换深色模式（导航态）"],
+        ["e", "进入或退出编辑模式（导航态）"]
+      ];
+      var list = mk("div");
+      rows.forEach(function (r) {
+        var line = mk("div");
+        line.style.cssText = "display:flex;gap:14px;align-items:baseline;padding:7px 0;border-bottom:1px solid var(--line)";
+        var k = mk("code", null, r[0]);
+        k.style.cssText = "flex:none;min-width:74px;font-size:12px;padding:2px 7px;background:var(--line);border-radius:5px;text-align:center";
+        line.appendChild(k);
+        line.appendChild(mk("span", null, r[1]));
+        list.appendChild(line);
+      });
+      body.appendChild(list);
+      var okb = btn("知道了", "primary");
+      okb.addEventListener("click", closeModal);
+      foot.appendChild(okb);
+    });
+  }
+
+  /* ── 批量导入 ── */
+  function openBatchModal(catName) {
+    var cat = catByName(catName);
+    if (!cat) return;
+    openModal("批量导入到「" + cat.name + "」", function (body, foot) {
+      body.appendChild(modalNote(
+        "每行一个站点，用竖线分隔：<br>" +
+        "<code>名称 | 网址 | 描述（可空）</code><br>" +
+        "也支持只写网址，例如 <code>https://example.com</code>"));
+      var f = mk("div", "field");
+      var ta = mk("textarea");
+      ta.rows = 9;
+      ta.style.cssText = "width:100%;padding:10px 12px;background:var(--card);border:1px solid var(--line);" +
+                         "border-radius:9px;outline:none;resize:vertical;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px";
+      ta.placeholder = "GitHub | https://github.com | 代码托管\nhttps://example.com\nMDN | https://developer.mozilla.org";
+      ta.setAttribute("data-autofocus", "");
+      f.appendChild(ta);
+      body.appendChild(f);
+      var preview = mk("div", "hint");
+      preview.style.minHeight = "18px";
+      body.appendChild(preview);
+      foot.appendChild(modalNote(""));
+
+      function parse() {
+        return ta.value.split("\n").map(function (line) { return line.trim(); })
+          .filter(function (line) { return line && line.indexOf("#") !== 0; })
+          .map(function (line) {
+            var p = line.split("|").map(function (s) { return s.trim(); });
+            var name, url, desc;
+            if (p.length === 1) {
+              url = p[0];
+              name = hostOf(url) || url;
+            } else {
+              name = p[0];
+              url = p[1];
+              desc = p[2];
+            }
+            return { name: name, url: url, desc: desc };
+          })
+          .filter(function (x) { return /^https?:\/\/[^\s]+$/i.test(x.url || ""); });
+      }
+      ta.addEventListener("input", function () {
+        var n = parse().length;
+        preview.textContent = n ? "将添加 " + n + " 个站点" : "暂未识别到合法网址（需以 http:// 或 https:// 开头）";
+      });
+
+      var add = btn("添加到「" + cat.name + "」", "primary", PATH.plus);
+      add.addEventListener("click", function () {
+        var items = parse();
+        if (!items.length) { toast("没有识别到合法网址", "err"); return; }
+        items.forEach(function (it) {
+          var o = { name: it.name, url: it.url };
+          if (it.desc) o.desc = it.desc;
+          cat.links.push(o);
+        });
+        persist(); closeModal(); render();
+        toast("已批量添加 " + items.length + " 个站点");
+      });
+      foot.appendChild(add);
+    }, { wide: true });
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     GitHub：连接与提交
+     ══════════════════════════════════════════════════════════════ */
+  function ghHeaders() { return { "Authorization": "Bearer " + GH.token, "Accept": "application/vnd.github+json" }; }
+
+  async function ghVerify(token) {
+    var r = await fetch("https://api.github.com/user", { headers: { "Authorization": "Bearer " + token, "Accept": "application/vnd.github+json" } });
+    if (!r.ok) throw new Error(r.status === 401 ? "token 无效或已过期" : "验证失败（HTTP " + r.status + "）");
+    var u = await r.json();
+    return { login: u.login, id: u.id };
+  }
+
+  async function ghGetFile() {
+    var url = "https://api.github.com/repos/" + REPO.owner + "/" + REPO.name + "/contents/" + REPO.path +
+              "?ref=" + encodeURIComponent(REPO.branch) + "&t=" + Date.now();
+    var r = await fetch(url, { headers: ghHeaders(), cache: "no-store" });
+    if (r.status === 404) throw new Error("仓库中找不到 " + REPO.path + "（检查仓库名与路径）");
+    if (r.status === 401) throw new Error("token 已失效，请重新连接");
+    if (r.status === 403) throw new Error("token 权限不足（fine-grained token 需勾 Contents: Read and write）");
+    if (!r.ok) throw new Error("读取失败 HTTP " + r.status);
+    var d = await r.json();
+    return { sha: d.sha, text: decodeURIComponent(escape(atob((d.content || "").replace(/\n/g, "")))) };
+  }
+
+  async function ghPutFile(text, sha, message) {
+    var url = "https://api.github.com/repos/" + REPO.owner + "/" + REPO.name + "/contents/" + REPO.path;
+    var r = await fetch(url, {
+      method: "PUT",
+      headers: Object.assign({ "Content-Type": "application/json" }, ghHeaders()),
+      body: JSON.stringify({
+        message: message,
+        content: btoa(unescape(encodeURIComponent(text))),
+        sha: sha,
+        branch: REPO.branch
+      })
+    });
+    if (r.status === 409) throw Object.assign(new Error("conflict"), { code: 409 });
+    if (r.status === 401) throw new Error("token 已失效，请重新连接");
+    if (r.status === 403) throw new Error("token 权限不足（fine-grained token 需勾 Contents: Read and write）");
+    if (!r.ok) {
+      var msg = "提交失败 HTTP " + r.status;
+      try { var j = await r.json(); if (j.message) msg += "：" + j.message; } catch (e) {}
+      throw new Error(msg);
+    }
+    return await r.json();
+  }
+
+  function serialized() {
+    return JSON.stringify({ title: DATA.title, subtitle: DATA.subtitle, categories: DATA.categories }, null, 2) + "\n";
+  }
+
+  /* 把本机改动推送到 GitHub */
+  async function pushToGitHub(silent) {
+    if (!GH.token) { openGhModal(); return; }
+    var z = await loadingToast("正在提交到 GitHub…");
+    try {
+      var cur = await ghGetFile();
+      var next = serialized();
+      if (cur.text.replace(/\s+$/, "") === next.replace(/\s+$/, "")) {
+        z.done();
+        if (!silent) toast("本机内容与线上一致，无需提交");
+        return;
+      }
+      try {
+        var res = await ghPutFile(next, cur.sha, "chore: 更新站点（来自壹页编辑器）");
+        z.done();
+        /* 提交成功后：线上即本机内容，清掉本机改动标记，让站点回归"线上为准" */
+        BASE = clone(DATA);
+        dropLocalKeepUI();
+        updateDirtyBar();
+        render();
+        toast("已提交到 GitHub" + (res.commit && res.commit.sha ? "（" + res.commit.sha.slice(0, 7) + "）" : ""), "ok", 3200);
+      } catch (err) {
+        if (err.code === 409) {
+          z.done();
+          askConfirm("线上文件已变更",
+            "提交被拒绝：线上 links.json 在你这段时间里被别处改过。直接覆盖会丢掉那部分改动。要用当前内容覆盖线上吗？",
+            "覆盖线上", async function () {
+              var fresh = await ghGetFile();
+              try {
+                await ghPutFile(serialized(), fresh.sha, "chore: 更新站点（来自壹页编辑器，覆盖冲突版本）");
+                BASE = clone(DATA); dropLocalKeepUI(); updateDirtyBar(); render();
+                toast("已覆盖提交", "ok", 3000);
+              } catch (e2) { toast(e2.message, "err", 5000); }
+            });
+          return;
+        }
+        throw err;
+      }
+    } catch (err) {
+      z.done();
+      toast(err.message || "提交失败", "err", 5000);
+    }
+  }
+  function dropLocalKeepUI() {
+    safeDel(localStorage, K_DATA);
     document.body.classList.remove("has-local");
   }
 
-  /* ══════════════ 图标来源（级联回退） ══════════════
-     ① links.json 指定的官方图标（品牌保真）
-     ② favicon 聚合服务（可绕过部分站的防盗链与网络限制）
-     ③ 名称首字母色块
-     实测 LINUX DO 直连 403 但聚合服务可取、小红书反之，故两者都要。 */
+  /* 加载中的轻提示 */
+  function loadingToast(text) {
+    var t = mk("div", "toast ok");
+    var sp = mk("span", null, text);
+    t.appendChild(sp);
+    toastWrap.appendChild(t);
+    return { done: function () { t.classList.add("out"); setTimeout(function () { t.remove(); }, 260); } };
+  }
+
+  /* ── GitHub 连接弹窗：让用户在两种方式间选择 ── */
+  function openGhModal() {
+    openModal("连接 GitHub", function (body, foot) {
+      body.appendChild(modalNote(
+        "连接后，「提交到 GitHub」会直接把你本机的改动写进 <code>" + REPO.owner + "/" + REPO.name + "</code>，" +
+        "之后所有设备都能看到。两种方式任选，都只作用于这一个仓库。"));
+
+      var tabs = mk("div");
+      tabs.style.cssText = "display:flex;gap:6px;margin:4px 0 14px";
+      var panel = mk("div");
+
+      function mkTab(label, active, onClick) {
+        var b = mk("button", "btn" + (active ? " primary" : ""));
+        b.type = "button"; b.textContent = label;
+        b.addEventListener("click", onClick);
+        return b;
+      }
+
+      function renderPat() {
+        panel.innerHTML = "";
+        var fToken = field("Personal Access Token", "推荐用 fine-grained token，权限只需 Contents: Read and write，且限定到本仓库");
+        fToken.input.type = "password";
+        fToken.input.placeholder = "github_pat_... 或 ghp_...";
+        panel.appendChild(fToken.wrap);
+        var steps = mk("div", "modal-note");
+        steps.style.padding = "0 0 12px";
+        steps.innerHTML =
+          "创建步骤：<br>" +
+          "1. 打开 GitHub → Settings → Developer settings → <b>Fine-grained tokens</b> → Generate new token<br>" +
+          "2. <b>Repository access</b> 只勾 <code>" + REPO.name + "</code><br>" +
+          "3. <b>Permissions</b> → Repository permissions → <b>Contents: Read and write</b><br>" +
+          "4. 生成后复制，粘贴到上面";
+        panel.appendChild(steps);
+        var link = mk("a", "btn");
+        link.href = "https://github.com/settings/personal-access-tokens/new";
+        link.target = "_blank"; link.rel = "noopener";
+        link.appendChild(svgIcon(PATH.upload));
+        link.appendChild(mk("span", null, "打开创建页面"));
+        panel.appendChild(link);
+
+        foot.innerHTML = "";
+        var connect = btn("连接", "primary");
+        connect.addEventListener("click", async function () {
+          var tk = fToken.input.value.trim();
+          if (!tk) { fToken.wrap.classList.add("bad"); fToken.input.focus(); return; }
+          connect.disabled = true; connect.textContent = "验证中…";
+          try {
+            var u = await ghVerify(tk);
+            GH = { token: tk, method: "pat", login: u.login };
+            saveGH(); updateGhBadge();
+            closeModal();
+            toast("已连接 " + u.login + "，可以提交了");
+          } catch (err) {
+            connect.disabled = false; connect.textContent = "连接";
+            fToken.wrap.classList.add("bad");
+            toast(err.message, "err", 4000);
+          }
+        });
+        foot.appendChild(connect);
+        var cancel = btn("取消", "ghost");
+        cancel.addEventListener("click", closeModal);
+        foot.insertBefore(cancel, connect);
+      }
+
+      function renderOAuth() {
+        panel.innerHTML = "";
+        foot.innerHTML = "";
+        if (!AUTH || !AUTH.clientId || !AUTH.workerUrl) {
+          panel.appendChild(modalNote(
+            "OAuth 方式需要先部署一个 token 交换服务（因为 GitHub 的换 token 接口不支持浏览器跨域，且 client_secret 不能放前端）。<br><br>" +
+            "本项目已在 <code>worker/</code> 目录提供完整实现与部署文档。<br>" +
+            "部署后，把 <code>clientId</code> 与 <code>workerUrl</code> 填进 <code>links.json</code> 的 <code>auth</code> 字段，" +
+            "这里就会出现登录按钮。"));
+          var close2 = btn("知道了", "primary");
+          close2.addEventListener("click", closeModal);
+          foot.appendChild(close2);
+          return;
+        }
+        panel.appendChild(modalNote(
+          "点击下面的按钮会跳转到 GitHub 授权。<br>" +
+          "授权范围仅限本仓库的 Contents 读写，且服务端会校验只有你本人可以使用。"));
+        var go = btn("使用 GitHub 登录", "primary");
+        go.addEventListener("click", function () {
+          var state = Math.random().toString(36).slice(2) + Date.now().toString(36);
+          safeSet(sessionStorage, "gh_oauth_state", state);
+          var redirect = location.origin + location.pathname;
+          var u = "https://github.com/login/oauth/authorize" +
+            "?client_id=" + encodeURIComponent(AUTH.clientId) +
+            "&redirect_uri=" + encodeURIComponent(redirect) +
+            "&scope=" + encodeURIComponent(AUTH.scope || "public_repo") +
+            "&state=" + encodeURIComponent(state);
+          location.href = u;
+        });
+        foot.appendChild(go);
+        var cancel2 = btn("取消", "ghost");
+        cancel2.addEventListener("click", closeModal);
+        foot.insertBefore(cancel2, go);
+      }
+
+      var tabPat, tabOauth;
+      tabPat = mkTab("方式一 · 粘贴 Token", true, function () {
+        tabPat.className = "btn primary"; tabOauth.className = "btn"; renderPat();
+      });
+      tabOauth = mkTab("方式二 · GitHub 登录（OAuth）", false, function () {
+        tabOauth.className = "btn primary"; tabPat.className = "btn"; renderOAuth();
+      });
+      tabs.appendChild(tabPat); tabs.appendChild(tabOauth);
+      body.appendChild(tabs);
+      body.appendChild(panel);
+      renderPat();
+    });
+  }
+
+  /* OAuth 回调处理：?code=... 回来时换取 token */
+  async function handleOAuthCallback() {
+    var sp = new URLSearchParams(location.search);
+    var code = sp.get("code"), state = sp.get("state");
+    if (!code) return false;
+    var expect = safeGet(sessionStorage, "gh_oauth_state");
+    safeDel(sessionStorage, "gh_oauth_state");
+    /* 立刻清掉地址栏里的 code，避免被复制分享出去 */
+    try { history.replaceState(null, "", location.origin + location.pathname + location.hash); } catch (e) {}
+    if (!AUTH || !AUTH.workerUrl) { toast("未配置 OAuth 服务，无法完成登录", "err", 4000); return true; }
+    if (!expect || state !== expect) { toast("授权校验失败（state 不匹配），已中止", "err", 4500); return true; }
+    var z = loadingToast("正在完成授权…");
+    try {
+      var r = await fetch(AUTH.workerUrl.replace(/\/$/, "") + "/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: code })
+      });
+      var j = await r.json().catch(function () { return {}; });
+      if (!r.ok || !j.token) throw new Error(j.message || j.error || ("授权失败 HTTP " + r.status));
+      GH = { token: j.token, method: "oauth", login: "" };
+      try { var u = await ghVerify(j.token); GH.login = u.login; } catch (e) {}
+      saveGH(); updateGhBadge();
+      z.done();
+      toast("已通过 GitHub 登录" + (GH.login ? "：" + GH.login : ""));
+    } catch (err) {
+      z.done();
+      toast(err.message || "授权失败", "err", 5000);
+    }
+    return true;
+  }
+
+  function updateGhBadge() {
+    var b = $("ghBadge"), t = $("ghBadgeText");
+    if (GH.token) {
+      b.classList.add("show", "on");
+      t.textContent = GH.login ? (GH.login + " · " + (GH.method === "oauth" ? "OAuth" : "Token")) : "已连接";
+    } else {
+      b.classList.remove("on");
+      b.classList.add("show");
+      t.textContent = "连接 GitHub";
+    }
+  }
+  $("ghBadge").addEventListener("click", function () {
+    if (GH.token) {
+      openModal("GitHub 连接", function (body, foot) {
+        body.appendChild(modalNote(
+          "已连接" + (GH.login ? "：<b>" + esc(GH.login) + "</b>" : "") +
+          "（方式：" + (GH.method === "oauth" ? "OAuth 登录" : "Personal Access Token") + "）<br><br>" +
+          "目标仓库：<code>" + REPO.owner + "/" + REPO.name + "</code>，分支 <code>" + REPO.branch + "</code>，文件 <code>" + REPO.path + "</code>"));
+        var push = btn("提交到 GitHub", "primary", PATH.upload);
+        push.addEventListener("click", function () { closeModal(); pushToGitHub(); });
+        foot.appendChild(push);
+        var disc = btn("断开连接", "danger");
+        disc.addEventListener("click", function () {
+          closeModal();
+          askConfirm("断开连接", "断开后会删除本机保存的 token，线上内容不受影响。", "断开", function () {
+            dropGH(); updateGhBadge(); toast("已断开 GitHub 连接");
+          });
+        });
+        foot.insertBefore(disc, push);
+      });
+    } else {
+      openGhModal();
+    }
+  });
+
+  /* ══════════════════════════════════════════════════════════════
+     数据渲染
+     ══════════════════════════════════════════════════════════════ */
+  function catByName(name) {
+    for (var i = 0; i < DATA.categories.length; i++) if (DATA.categories[i].name === name) return DATA.categories[i];
+    return null;
+  }
+  function isStarred(url) { return UI.starred.indexOf(url) > -1; }
+  function toggleStar(url) {
+    var i = UI.starred.indexOf(url);
+    if (i > -1) UI.starred.splice(i, 1); else UI.starred.unshift(url);
+    saveUI();
+  }
+  function pushRecent(url) {
+    var i = UI.recent.indexOf(url);
+    if (i > -1) UI.recent.splice(i, 1);
+    UI.recent.unshift(url);
+    if (UI.recent.length > 12) UI.recent.length = 12;
+    saveUI();
+  }
+  function collectByUrls(urls) {
+    var out = [], seen = {};
+    urls.forEach(function (u) {
+      if (seen[u]) return;
+      DATA.categories.forEach(function (c) {
+        c.links.forEach(function (l) { if (l.url === u && !seen[u]) { seen[u] = 1; out.push({ link: l, cat: c.name }); } });
+      });
+    });
+    return out;
+  }
+
+  /* 同一站点可能同时出现在收藏区与原分类里，星标必须同步 */
+  function refreshStarState(url) {
+    var on = isStarred(url);
+    mainEl.querySelectorAll("a.card").forEach(function (c) {
+      var s = c.querySelector(".star");
+      if (!s) return;
+      var isThis = false;
+      try { isThis = new URL(c.getAttribute("href"), location.href).href === new URL(url, location.href).href; } catch (e) { isThis = c.getAttribute("href") === url; }
+      if (!isThis) return;
+      s.classList.toggle("on", on);
+      s.title = on ? "取消收藏" : "收藏";
+      s.setAttribute("aria-label", s.title + " " + (c.querySelector(".t").textContent || ""));
+      c.classList.toggle("starred", on);
+    });
+  }
+
+  /* 收藏数变化后，统计项与页脚要跟着更新（旧实现只刷了收藏区） */
+  function refreshCounts() {
+    var total = DATA.categories.reduce(function (a, c) { return a + c.links.length; }, 0);
+    renderStats(total, DATA.categories.length);
+    $("footCount").textContent = "共 " + total + " 个站点，分 " + DATA.categories.length + " 类" +
+      (UI.starred.length ? " · 已收藏 " + UI.starred.length + " 个" : "");
+  }
+
   function iconSources(link, host) {
     var list = [];
     if (link.icon) {
@@ -1002,21 +1940,21 @@
     return list;
   }
 
-  /* ══════════════ 卡片 ══════════════ */
-  function buildCard(link, catName, idx) {
+  function buildCard(link, catName, idx, virtualKey) {
     var host = hostOf(link.url);
-    var a = document.createElement("a");
-    a.className = "card";
+    var a = mk("a", "card");
     a.href = link.url;
     a.target = "_blank";
     a.rel = "noopener noreferrer";
     a.title = link.name + " — " + link.url;
+    if (isStarred(link.url)) a.classList.add("starred");
 
-    var av = document.createElement("span");
-    av.className = "avatar";
-    var img = document.createElement("img");
+    /* 头像 */
+    var av = mk("span", "avatar");
+    var img = mk("img");
     img.loading = "lazy"; img.alt = ""; img.referrerPolicy = "no-referrer"; img.decoding = "async";
     var sources = iconSources(link, host), si = 0;
+    var cached = iconCache[host];
     function nextSrc() {
       si++;
       if (si < sources.length) { img.src = sources[si]; return; }
@@ -1024,42 +1962,104 @@
       if (img.parentNode) img.remove();
     }
     img.addEventListener("error", nextSrc);
-    img.addEventListener("load", function () { if (!img.naturalWidth || !img.naturalHeight) nextSrc(); });
-    img.src = sources[0];
-    var fb = document.createElement("span");
-    fb.className = "fb";
-    fb.textContent = (link.name || host || "?").trim().charAt(0).toUpperCase();
+    img.addEventListener("load", function () {
+      if (!img.naturalWidth || !img.naturalHeight) { nextSrc(); return; }
+      /* 缓存成功的图标地址，减少下次请求 */
+      if (!cached && img.src.indexOf("data:") !== 0) {
+        iconCache[host] = img.src;
+        iconCacheDirty = true;
+        clearTimeout(saveIconCache._t);
+        saveIconCache._t = setTimeout(saveIconCache, 1500);
+      }
+    });
+    img.src = cached || sources[0];
+    var fb = mk("span", "fb", (link.name || host || "?").trim().charAt(0).toUpperCase());
     fb.style.background = colorOf(link.name || host);
-    av.appendChild(img);
-    av.appendChild(fb);
+    av.appendChild(img); av.appendChild(fb);
 
-    var info = document.createElement("span");
-    info.className = "info";
-    var elName = document.createElement("span"); elName.className = "t";
-    var elDesc = document.createElement("span"); elDesc.className = "d";
-    info.appendChild(elName);
-    info.appendChild(elDesc);
+    /* 文本 */
+    var info = mk("span", "info");
+    var elName = mk("span", "t");
+    var elDesc = mk("span", "d");
+    info.appendChild(elName); info.appendChild(elDesc);
 
-    var arrow = svgIcon(PATH.arrow, "2.4");
-    arrow.setAttribute("class", "arrow");
+    var arrow = svgIcon(PATH.arrow, "2.4", "arrow");
+    a.appendChild(av); a.appendChild(info); a.appendChild(arrow);
 
-    var bar = document.createElement("span");
-    bar.className = "edit-bar";
-    var grip = document.createElement("span");
-    grip.className = "mini grip";
-    grip.title = "拖拽排序";
-    grip.appendChild(svgIcon(PATH.grip));
-    var bEdit = document.createElement("button");
-    bEdit.type = "button"; bEdit.className = "mini"; bEdit.title = "编辑";
-    bEdit.setAttribute("aria-label", "编辑 " + (link.name || ""));
-    bEdit.appendChild(svgIcon(PATH.edit, "1.9"));
-    var bDel = document.createElement("button");
-    bDel.type = "button"; bDel.className = "mini del"; bDel.title = "删除";
-    bDel.setAttribute("aria-label", "删除 " + (link.name || ""));
-    bDel.appendChild(svgIcon(PATH.trash, "1.9"));
-    bar.appendChild(grip); bar.appendChild(bEdit); bar.appendChild(bDel);
+    /* 星标（非编辑态也可用） */
+    var star = mk("button", "star" + (isStarred(link.url) ? " on" : ""));
+    star.type = "button";
+    star.title = isStarred(link.url) ? "取消收藏" : "收藏";
+    star.setAttribute("aria-label", star.title + " " + (link.name || ""));
+    star.appendChild(svgIcon(PATH.star, "1.9"));
+    star.addEventListener("click", function (e) {
+      e.preventDefault(); e.stopPropagation();
+      toggleStar(link.url);
+      refreshStarState(link.url);
+      renderPinned();
+      refreshCounts();
+      var on = isStarred(link.url);
+      toast(on ? "已收藏「" + (link.name || host) + "」" : "已取消收藏");
+    });
+    a.appendChild(star);
 
-    a.appendChild(av); a.appendChild(info); a.appendChild(arrow); a.appendChild(bar);
+    /* 编辑态操作区 */
+    if (virtualKey == null) {
+      var bar = mk("span", "edit-bar");
+      var grip = mk("span", "mini grip");
+      grip.title = "拖拽排序";
+      grip.appendChild(svgIcon(PATH.grip));
+      var bEdit = mk("button", "mini"); bEdit.type = "button"; bEdit.title = "编辑";
+      bEdit.setAttribute("aria-label", "编辑 " + (link.name || ""));
+      bEdit.appendChild(svgIcon(PATH.edit, "1.9"));
+      var bDel = mk("button", "mini del"); bDel.type = "button"; bDel.title = "删除";
+      bDel.setAttribute("aria-label", "删除 " + (link.name || ""));
+      bDel.appendChild(svgIcon(PATH.trash, "1.9"));
+      bar.appendChild(grip); bar.appendChild(bEdit); bar.appendChild(bDel);
+
+      /* 触屏备用排序按钮 */
+      var nudge = mk("span", "nudge");
+      var bUp = mk("button"); bUp.type = "button"; bUp.title = "上移"; bUp.appendChild(svgIcon(PATH.up, "2.2"));
+      var bDown = mk("button"); bDown.type = "button"; bDown.title = "下移"; bDown.appendChild(svgIcon(PATH.down, "2.2"));
+      var cat = catByName(catName);
+      bUp.disabled = idx <= 0;
+      bDown.disabled = !cat || idx >= cat.links.length - 1;
+      function move(dir) {
+        var c = catByName(catName);
+        if (!c) return;
+        var to = idx + dir;
+        if (to < 0 || to >= c.links.length) return;
+        var m = c.links.splice(idx, 1)[0];
+        c.links.splice(to, 0, m);
+        persist(); render();
+      }
+      bUp.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); move(-1); });
+      bDown.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); move(1); });
+      nudge.appendChild(bUp); nudge.appendChild(bDown);
+      bar.appendChild(nudge);
+
+      a.appendChild(bar);
+
+      a.addEventListener("click", function (e) {
+        if (!editing) { pushRecent(link.url); return; }
+        e.preventDefault();
+        openLinkModal(catName, idx);
+      });
+      bEdit.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); openLinkModal(catName, idx); });
+      bDel.addEventListener("click", function (e) {
+        e.preventDefault(); e.stopPropagation();
+        var label = link.name || host;
+        askConfirm("删除站点", "确定删除「" + label + "」？此操作只影响本机编辑内容。", "删除", function () {
+          var c = catByName(catName);
+          if (!c) return;
+          var i = c.links.indexOf(link);
+          if (i > -1) c.links.splice(i, 1);
+          persist(); render(); toast("已删除「" + label + "」");
+        });
+      });
+    } else {
+      a.addEventListener("click", function () { if (!editing) pushRecent(link.url); });
+    }
 
     if (!reduceMotion) {
       a.addEventListener("pointermove", function (e) {
@@ -1068,44 +2068,60 @@
         a.style.setProperty("--my", (e.clientY - r.top) + "px");
       });
     }
-    /* 编辑态下整卡点击即编辑；非编辑态正常跳转 */
-    a.addEventListener("click", function (e) {
-      if (!editing) return;
-      e.preventDefault();
-      openLinkModal(catName, idx);
-    });
-    bEdit.addEventListener("click", function (e) {
-      e.preventDefault(); e.stopPropagation();
-      openLinkModal(catName, idx);
-    });
-    bDel.addEventListener("click", function (e) {
-      e.preventDefault(); e.stopPropagation();
-      var label = link.name || host;
-      askConfirm("删除站点", "确定删除「" + label + "」？此操作只影响本机编辑内容。", "删除", function () {
-        var cat = catByName(catName);
-        if (!cat) return;
-        var i = cat.links.indexOf(link);
-        if (i > -1) cat.links.splice(i, 1);
-        persist(); render(); toast("已删除「" + label + "」");
-      });
-    });
 
     return {
       el: a, elName: elName, elDesc: elDesc, cat: catName,
-      name: link.name || host, desc: link.desc || host,
+      name: link.name || host, desc: link.desc || host, url: link.url,
       hay: ((link.name || "") + " " + (link.desc || "") + " " + (link.url || "") + " " + host + " " +
             (Array.isArray(link.tags) ? link.tags.join(" ") : "")).toLowerCase()
     };
   }
 
-  /* ══════════════ 渲染 ══════════════ */
+  function buildSection(opts) {
+    var sec = mk("section");
+    sec.id = opts.id || ("c-" + opts.cat);
+    sec.dataset.cat = opts.cat;
+    if (opts.pinned) sec.classList.add("pinned-sec");
+    if (!reduceMotion) sec.classList.add("reveal");
+
+    var head = mk("div", "sec-head");
+    if (!opts.pinned && opts.cat !== recentCat) {
+      var grip = mk("span", "sec-grip");
+      grip.title = "拖拽调整分类顺序";
+      grip.appendChild(svgIcon(PATH.grip));
+      head.appendChild(grip);
+    }
+    head.appendChild(mk("h2", null, opts.title));
+    var meta = mk("span", "meta", opts.links.length + " 个站点");
+    head.appendChild(meta);
+
+    if (opts.pinned) {
+      var hint = mk("span", "pin-hint");
+      hint.appendChild(svgIcon(PATH.star, "2"));
+      hint.appendChild(mk("span", null, "在卡片右上角点星标即可收藏"));
+      head.appendChild(hint);
+    }
+    if (opts.actions) head.appendChild(opts.actions);
+    sec.appendChild(head);
+
+    var grid = mk("div", "grid");
+    grid.dataset.cat = opts.cat;
+    opts.links.forEach(function (entry, i) {
+      var card = buildCard(entry.link, entry.cat, entry.idx, entry.virtual);
+      cards.push(card);
+      grid.appendChild(card.el);
+    });
+    sec.appendChild(grid);
+    return { sec: sec, grid: grid };
+  }
+
   function render() {
     var skel = $("skeleton");
     if (skel) skel.remove();
-
     mainEl.innerHTML = "";
     filtersEl.innerHTML = "";
     cards = [];
+    kbIndex = -1;
 
     var cats = DATA.categories || [];
     if (DATA.title) {
@@ -1114,139 +2130,139 @@
       document.title = DATA.title;
     }
     $("heroSub").textContent = DATA.subtitle || "";
+    (cats || []).forEach(function (c) { if (!c.links) c.links = []; });
 
-    var totalAll = cats.reduce(function (n, c) { return n + ((c.links && c.links.length) || 0); }, 0);
+    var totalAll = cats.reduce(function (n, c) { return n + c.links.length; }, 0);
 
+    /* 筛选 chip */
     function chip(label, value, count) {
-      var b = document.createElement("a");
-      b.className = "chip";
+      var b = mk("a", "chip");
       b.href = value === "all" ? "#" : "#cat=" + encodeURIComponent(value);
       b.setAttribute("aria-pressed", String(activeCat === value));
       b.dataset.value = value;
-      var l = document.createElement("span"); l.textContent = label;
-      var n = document.createElement("span"); n.className = "n"; n.textContent = count;
-      b.appendChild(l); b.appendChild(n);
+      b.appendChild(mk("span", null, label));
+      b.appendChild(mk("span", "n", count));
       b.addEventListener("click", function (e) { e.preventDefault(); setCat(value); b.blur(); });
       return b;
     }
     filtersEl.appendChild(chip("全部", "all", totalAll));
-    cats.forEach(function (c) {
-      filtersEl.appendChild(chip(c.name, c.name, (c.links && c.links.length) || 0));
-    });
+    cats.forEach(function (c) { filtersEl.appendChild(chip(c.name, c.name, c.links.length)); });
 
+    /* 收藏置顶区 */
+    renderPinned();
+
+    /* 普通分类 */
     cats.forEach(function (cat, ci) {
-      if (!cat.links) cat.links = [];
-      var sec = document.createElement("section");
-      sec.id = "c-" + cat.name;
-      sec.dataset.cat = cat.name;
-      if (!reduceMotion) sec.classList.add("reveal");
+      var links = cat.links.map(function (l, i) { return { link: l, cat: cat.name, idx: i }; })
+        .filter(function (e) { return UI.hidden.indexOf(e.link.url) === -1; });
 
-      var head = document.createElement("div");
-      head.className = "sec-head";
-      var grip = document.createElement("span");
-      grip.className = "sec-grip";
-      grip.title = "拖拽调整分类顺序";
-      grip.appendChild(svgIcon(PATH.grip));
-      var h2 = document.createElement("h2");
-      h2.textContent = cat.name;
-      var meta = document.createElement("span");
-      meta.className = "meta";
-      meta.textContent = cat.links.length + " 个站点";
-      head.appendChild(grip); head.appendChild(h2); head.appendChild(meta);
-
-      var actions = document.createElement("span");
-      actions.className = "sec-actions";
-      var bRename = document.createElement("button");
-      bRename.type = "button"; bRename.className = "btn ghost";
-      bRename.appendChild(svgIcon(PATH.edit, "1.9"));
-      var s1 = document.createElement("span"); s1.textContent = "重命名"; bRename.appendChild(s1);
-      bRename.addEventListener("click", function () { openCatModal(ci); });
-      var bRemove = document.createElement("button");
-      bRemove.type = "button"; bRemove.className = "btn ghost danger";
-      bRemove.appendChild(svgIcon(PATH.trash, "1.9"));
-      bRemove.addEventListener("click", function () {
-        askConfirm("删除分类", "删除「" + cat.name + "」及其 " + cat.links.length + " 个站点？", "删除", function () {
-          DATA.categories.splice(ci, 1);
-          if (activeCat === cat.name) activeCat = "all";
-          persist(); render(); toast("已删除分类「" + cat.name + "」");
+      var actions = mk("span", "sec-actions");
+      (function () {
+        var bAdd = btn("添加", "ghost", PATH.plus);
+        bAdd.addEventListener("click", function () { openLinkModal(cat.name, -1); });
+        var bBatch = btn("批量", "ghost", PATH.download);
+        bBatch.addEventListener("click", function () { openBatchModal(cat.name); });
+        var bRename = btn("重命名", "ghost", PATH.edit);
+        bRename.addEventListener("click", function () { openCatModal(ci); });
+        var bRemove = btn("删除", "ghost danger", PATH.trash);
+        bRemove.addEventListener("click", function () {
+          askConfirm("删除分类", "删除「" + cat.name + "」及其 " + cat.links.length + " 个站点？", "删除", function () {
+            DATA.categories.splice(ci, 1);
+            if (activeCat === cat.name) activeCat = "all";
+            persist(); render(); toast("已删除分类「" + cat.name + "」");
+          });
         });
-      });
-      actions.appendChild(bRename); actions.appendChild(bRemove);
-      head.appendChild(actions);
-      sec.appendChild(head);
+        actions.appendChild(bAdd); actions.appendChild(bBatch);
+        actions.appendChild(bRename); actions.appendChild(bRemove);
+      })();
 
-      var grid = document.createElement("div");
-      grid.className = "grid";
-      grid.dataset.cat = cat.name;
-
-      cat.links.forEach(function (link, li) {
-        var card = buildCard(link, cat.name, li);
-        cards.push(card);
-        grid.appendChild(card.el);
-      });
-
-      var add = document.createElement("button");
-      add.type = "button"; add.className = "add-slot";
-      add.appendChild(svgIcon(PATH.plus, "2"));
-      var al = document.createElement("span"); al.textContent = "添加站点"; add.appendChild(al);
-      add.addEventListener("click", function () { openLinkModal(cat.name, -1); });
-      grid.appendChild(add);
-
-      sec.appendChild(grid);
-      mainEl.appendChild(sec);
-
-      if (!reduceMotion) {
-        grid.querySelectorAll(".card").forEach(function (c, i) {
-          setTimeout(function () { c.classList.add("in"); }, 40 + ci * 40 + Math.min(i * 24, 280));
-        });
-        if (secObserver) secObserver.observe(sec); else sec.classList.add("in");
-      } else {
-        grid.querySelectorAll(".card").forEach(function (c) { c.classList.add("in"); });
-        sec.classList.add("in");
-      }
+      var built = buildSection({ cat: cat.name, title: cat.name, links: links, actions: actions });
+      mainEl.appendChild(built.sec);
+      animateSection(built.grid, ci);
     });
 
-    $("footCount").textContent = "共 " + totalAll + " 个站点，分 " + cats.length + " 类";
+    /* 收藏区若与搜索/筛选冲突，交给 applyFilter 处理 */
+
+    $("footCount").textContent = "共 " + totalAll + " 个站点，分 " + cats.length + " 类" +
+      (UI.starred.length ? " · 已收藏 " + UI.starred.length + " 个" : "");
     renderStats(totalAll, cats.length);
 
-    /* hash 里的分类若不存在则安全回退，绝不显示空白页 */
     if (activeCat !== "all" && !cats.some(function (c) { return c.name === activeCat; })) activeCat = "all";
     Array.prototype.forEach.call(filtersEl.children, function (c) {
       c.setAttribute("aria-pressed", String(c.dataset.value === activeCat));
     });
 
     if (pendingSec) {
-      var target = document.getElementById("c-" + pendingSec);
-      if (target) {
-        requestAnimationFrame(function () {
-          target.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
-        });
-      }
+      var target = document.getElementById("c-" + pendingSec) || document.getElementById("c-" + pendingSec.replace(/\s/g, ""));
+      if (target) requestAnimationFrame(function () {
+        target.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+      });
       pendingSec = null;
     }
-
+    syncDraggable();
     applyFilter();
   }
 
+  function renderPinned() {
+    var old = document.getElementById("c-" + pinnedCat);
+    if (old) old.remove();
+    /* 只保留仍存在的收藏，顺便清理失效项 */
+    var valid = [];
+    UI.starred.forEach(function (u) {
+      var found = false;
+      DATA.categories.forEach(function (c) { c.links.forEach(function (l) { if (l.url === u) found = true; }); });
+      if (found) valid.push(u);
+    });
+    if (valid.length !== UI.starred.length) { UI.starred = valid; saveUI(); }
+
+    var entries = collectByUrls(valid);
+    var sec = buildSection({
+      cat: pinnedCat, id: "c-" + pinnedCat, title: "常用",
+      links: entries.map(function (e) { return { link: e.link, cat: e.cat, idx: -1, virtual: true }; }),
+      pinned: true
+    });
+    sec.sec.dataset.pinned = "1";
+    sec.sec.style.display = entries.length ? "" : "none";
+    mainEl.insertBefore(sec.sec, mainEl.firstChild);
+    animateSection(sec.grid, -1);
+    /* 收藏卡片不进 cards（不参与搜索筛选），但要能被 CSS 计数跳过 */
+    cards = cards.filter(function (c) { return c.cat !== pinnedCat; });
+  }
+
+  function animateSection(grid, ci) {
+    if (reduceMotion) {
+      grid.querySelectorAll(".card").forEach(function (c) { c.classList.add("in"); });
+      return;
+    }
+    grid.querySelectorAll(".card").forEach(function (c, i) {
+      setTimeout(function () { c.classList.add("in"); }, Math.max(0, 40 + ci * 40) + Math.min(i * 22, 260));
+    });
+    var sec = grid.closest("section");
+    if (secObserver && sec) secObserver.observe(sec); else if (sec) sec.classList.add("in");
+  }
+
   function renderStats(total, cats) {
-    var el = $("stats");
-    el.innerHTML = '<div class="item"><b>0</b><span class="lbl">个站点</span></div>' +
-                   '<div class="item"><b>0</b><span class="lbl">个分类</span></div>';
-    var bs = el.querySelectorAll("b");
-    if (reduceMotion) { bs[0].textContent = total; bs[1].textContent = cats; return; }
-    [[bs[0], total], [bs[1], cats]].forEach(function (pair, idx) {
-      var node = pair[0], target = pair[1], start = performance.now(), dur = 780;
+    var s = $("stats");
+    s.innerHTML = '<div class="item"><b>0</b><span class="lbl">个站点</span></div>' +
+                  '<div class="item"><b>0</b><span class="lbl">个分类</span></div>' +
+                  (UI.starred.length ? '<div class="item"><b>0</b><span class="lbl">个收藏</span></div>' : "");
+    var bs = s.querySelectorAll("b");
+    var vals = UI.starred.length ? [total, cats, UI.starred.length] : [total, cats];
+    if (reduceMotion) { bs.forEach(function (b, i) { b.textContent = vals[i]; }); return; }
+    vals.forEach(function (target, idx) {
+      var node = bs[idx]; if (!node) return;
+      var start = performance.now(), dur = 780;
       setTimeout(function tick(now) {
         var p = Math.min(((now || performance.now()) - start) / dur, 1);
         node.textContent = Math.round(target * (1 - Math.pow(1 - p, 3)));
         if (p < 1) requestAnimationFrame(tick);
-      }, idx * 90);
+      }, idx * 80);
     });
   }
 
-  /* ══════════════ hash ══════════════
-     #cat=分类名 → 筛选     #sec=分类名 → 滚动定位
-     两种语义用显式前缀区分；兼容旧的 #c-分类名 写法。 */
+  /* ══════════════════════════════════════════════════════════════
+     筛选 / 搜索（带相关性排序）
+     ══════════════════════════════════════════════════════════════ */
   function writeHash(kind, value) {
     try {
       if (!kind || !value) history.replaceState(null, "", location.pathname + location.search);
@@ -1264,7 +2280,6 @@
     return null;
   }
 
-  /* 切换筛选：带 FLIP，让卡片平滑移动而非瞬跳 */
   function setCat(value) {
     var prev = activeCat;
     activeCat = value;
@@ -1272,13 +2287,10 @@
       c.setAttribute("aria-pressed", String(c.dataset.value === value));
     });
     writeHash(value === "all" ? "" : "cat", value === "all" ? "" : value);
-
     if (reduceMotion || prev === value) { applyFilter(); return; }
 
     var first = new Map();
-    cards.forEach(function (c) {
-      if (!c.el.classList.contains("hide")) first.set(c.el, c.el.getBoundingClientRect());
-    });
+    cards.forEach(function (c) { if (!c.el.classList.contains("hide")) first.set(c.el, c.el.getBoundingClientRect()); });
     applyFilter();
     var moved = [];
     cards.forEach(function (c) {
@@ -1312,55 +2324,190 @@
     if (h.kind === "sec") return;
     goCat(h.value);
   });
+  /* 收藏区始终显示（除非搜索词不命中或无收藏） */
+  function score(c, q) {
+    if (!q) return 0;
+    var n = c.name.toLowerCase();
+    if (n === q) return 0;
+    if (n.indexOf(q) === 0) return 1;
+    if (n.indexOf(q) > -1) return 2;
+    if (String(c.desc || "").toLowerCase().indexOf(q) > -1) return 3;
+    return 4;
+  }
 
   function applyFilter() {
     var q = query.trim().toLowerCase();
     var visible = 0, perCat = {};
+    var pin = document.getElementById("c-" + pinnedCat);
+    var pinShow = 0;
+
     cards.forEach(function (c) {
-      var ok = (activeCat === "all" || c.cat === activeCat) && (!q || c.hay.indexOf(q) !== -1);
+      var okCat = activeCat === "all" || c.cat === activeCat;
+      var okQ = !q || c.hay.indexOf(q) !== -1;
+      c.el.dataset.match = String(score(c, q));
+      var ok = okCat && okQ;
       c.el.classList.toggle("hide", !ok);
       if (ok) { visible++; perCat[c.cat] = (perCat[c.cat] || 0) + 1; }
       c.elName.innerHTML = highlight(c.name, q);
       c.elDesc.innerHTML = highlight(c.desc, q);
       c.el.setAttribute("aria-hidden", ok ? "false" : "true");
     });
+
+    /* 相关性排序：仅在搜索时接管，且不改数据、只改渲染顺序 */
+    if (q) {
+      Array.prototype.forEach.call(mainEl.querySelectorAll(".grid"), function (grid) {
+        var list = Array.prototype.slice.call(grid.querySelectorAll("a.card"));
+        list.sort(function (a, b) { return (+a.dataset.match) - (+b.dataset.match); });
+        list.forEach(function (n) { grid.appendChild(n); });
+      });
+    }
+
     Array.prototype.forEach.call(mainEl.children, function (sec) {
+      if (sec.dataset.pinned === "1") return;
       var n = perCat[sec.dataset.cat] || 0;
       sec.classList.toggle("hide", n === 0);
       var meta = sec.querySelector(".meta");
       if (meta) meta.textContent = n + " 个站点";
     });
-    emptyEl.classList.toggle("show", visible === 0);
-    if (visible === 0) {
-      var title = $("emptyTitle"), hint = $("emptyHint");
-      if (editing) {
-        title.textContent = "这个分类下还没有站点";
-        hint.textContent = "点虚线框「添加站点」即可加入。";
-      } else if (q) {
-        title.textContent = "没有匹配的站点";
-        hint.textContent = "换个关键词试试，或清空搜索框查看全部。";
-      } else if (activeCat !== "all") {
-        title.textContent = "「" + activeCat + "」下暂无站点";
-        hint.textContent = "点上方「全部」查看所有站点。";
-      } else {
-        title.textContent = "还没有任何站点";
-        hint.textContent = "点右上角「编辑」开始添加。";
-      }
+
+    /* 收藏区：筛选到某分类时隐藏，搜索时只显示命中的收藏 */
+    if (pin) {
+      var pinnedCards = pin.querySelectorAll("a.card");
+      pinShow = 0;
+      Array.prototype.forEach.call(pinnedCards, function (card) {
+        var hay = (card.querySelector(".t").textContent + " " + card.getAttribute("href")).toLowerCase();
+        var show = !q ? true : hay.indexOf(q) > -1;
+        card.classList.toggle("hide", !show);
+        if (show) pinShow++;
+      });
+      pin.style.display = (pinShow > 0 && activeCat === "all") ? "" : "none";
+      var m = pin.querySelector(".meta");
+      if (m) m.textContent = pinShow + " 个站点";
     }
-    searchbox.classList.toggle("has-value", q.length > 0);
+
+    emptyEl.classList.toggle("show", visible === 0 && !(pin && pinShowIsVisible(pin)));
+    if (emptyEl.classList.contains("show")) {
+      var title = $("emptyTitle"), hint = $("emptyHint");
+      if (editing) { title.textContent = "这个分类下还没有站点"; hint.textContent = "点右下角「添加站点」或分类标题的「添加」即可加入。"; }
+      else if (q) { title.textContent = "没有匹配的站点"; hint.textContent = "换个关键词试试，或清空搜索框查看全部。"; }
+      else if (activeCat !== "all") { title.textContent = "「" + activeCat + "」下暂无站点"; hint.textContent = "点上方「全部」查看所有站点。"; }
+      else { title.textContent = "还没有任何站点"; hint.textContent = "点右上角「编辑」开始添加。"; }
+    }
+    searchbox.classList.toggle("has-value", String(q).length > 0);
+    updateFilterFade();
+  }
+  function pinShowIsVisible(pin) { return pin && pin.style.display !== "none"; }
+
+  function updateFilterFade() {
+    var f = filtersEl, w = $("filtersWrap");
+    var canRight = f.scrollWidth - f.clientWidth - f.scrollLeft > 4;
+    w.classList.toggle("can-scroll-right", canRight);
+    w.classList.toggle("at-start", f.scrollLeft > 4);
   }
 
-  /* ══════════════ 搜索 / 滚动 ══════════════ */
+  /* ══════════════════════════════════════════════════════════════
+     键盘导航
+     ══════════════════════════════════════════════════════════════ */
+  function visibleCards() { return cards.filter(function (c) { return !c.el.classList.contains("hide"); }); }
+  function focusCard(i) {
+    var list = visibleCards();
+    if (!list.length) return;
+    i = Math.max(0, Math.min(i, list.length - 1));
+    if (kbIndex > -1 && list[kbIndex]) list[kbIndex].el.classList.remove("kb-focus");
+    kbIndex = i;
+    var c = list[i];
+    if (document.activeElement === qEl) qEl.blur();
+    c.el.classList.add("kb-focus");
+    c.el.scrollIntoView({ block: "nearest", behavior: reduceMotion ? "auto" : "smooth" });
+    lastTrigger = c.el;
+  }
+  function clearKbFocus() {
+    if (kbIndex > -1) {
+      var list = visibleCards();
+      if (list[kbIndex]) list[kbIndex].el.classList.remove("kb-focus");
+    }
+    kbIndex = -1;
+  }
+  function openFocused() {
+    var list = visibleCards();
+    if (kbIndex < 0 || !list[kbIndex]) return;
+    var card = list[kbIndex];
+    pushRecent(card.url);
+    window.open(card.url, "_blank", "noopener");
+  }
+
+  function inNavState() {
+    var ae = document.activeElement;
+    return !modalOpen && (!ae || ae === document.body) && !editing;
+  }
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") {
+      if (modalOpen) { closeModal(); return; }
+      if (kbIndex > -1) { clearKbFocus(); qEl.blur(); return; }
+      if (document.activeElement === qEl) { qEl.value = ""; query = ""; applyFilter(); qEl.blur(); return; }
+      if (editing) setEditing(false);
+      return;
+    }
+    if (modalOpen) {
+      if (e.key === "Enter" && document.activeElement && document.activeElement.tagName === "INPUT") {
+        e.preventDefault();
+        var primary = modalBody.querySelector(".modal-foot .btn.primary");
+        if (primary) primary.click();
+      }
+      return;
+    }
+
+    /* 卡片键盘导航 —— 必须排在「搜索框优先」之前，
+       否则进入导航后焦点若仍在搜索框（↓ 进入时并不会自动失焦），
+       方向键会被上面的分支拦掉 */
+    if (kbIndex > -1) {
+      if (e.key === "ArrowRight") { e.preventDefault(); focusCard(kbIndex + 1); return; }
+      if (e.key === "ArrowLeft") { e.preventDefault(); focusCard(kbIndex - 1); return; }
+      if (e.key === "ArrowDown") { e.preventDefault(); focusCard(Math.min(kbIndex + 4, 9999)); return; }
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        if (kbIndex < 4) { clearKbFocus(); qEl.focus(); } else focusCard(kbIndex - 4);
+        return;
+      }
+      if (e.key === "Enter") { e.preventDefault(); openFocused(); return; }
+      if (e.key === "s") { e.preventDefault(); var l = visibleCards()[kbIndex]; if (l) l.el.querySelector(".star").click(); return; }
+      return;
+    }
+
+    /* 搜索框内：↓ 进入结果列表，↑ 跳到结果末尾，Enter 直接打开首个 */
+    if (document.activeElement === qEl) {
+      if (e.key === "ArrowDown") { e.preventDefault(); focusCard(0); }
+      else if (e.key === "ArrowUp" && query.trim()) { e.preventDefault(); focusCard(9999); }
+      else if (e.key === "Enter") { e.preventDefault(); focusCard(0); openFocused(); }
+      return;
+    }
+
+    /* 全局快捷键 */
+    if (e.key === "/") { e.preventDefault(); qEl.focus(); qEl.select(); return; }
+    if (inNavState()) {
+      var k = e.key.toLowerCase();
+      if (k === "g") { e.preventDefault(); openJump(); return; }
+      if (k === "t") { e.preventDefault(); $("theme").click(); return; }
+      if (k === "e") { e.preventDefault(); setEditing(!editing); return; }
+      if (k === "?") { e.preventDefault(); openKbdHelp(); return; }
+    }
+  });
+
+  /* ══════════════════════════════════════════════════════════════
+     搜索输入
+     ══════════════════════════════════════════════════════════════ */
   var timer = null;
   qEl.addEventListener("input", function () {
     clearTimeout(timer);
     timer = setTimeout(function () {
       var prev = query;
       query = qEl.value;
-      if (reduceMotion || prev === query) { applyFilter(); return; }
+      if (reduceMotion || prev === query) { clearKbFocus(); applyFilter(); return; }
       var first = new Map();
       cards.forEach(function (c) { first.set(c.el, c.el.getBoundingClientRect()); });
       applyFilter();
+      clearKbFocus();
       cards.forEach(function (c) {
         if (c.el.classList.contains("hide")) return;
         var f = first.get(c.el);
@@ -1375,9 +2522,12 @@
     }, 85);
   });
   $("clear").addEventListener("click", function () {
-    qEl.value = ""; query = ""; applyFilter(); qEl.focus();
+    qEl.value = ""; query = ""; clearKbFocus(); applyFilter(); qEl.focus();
   });
 
+  /* ══════════════════════════════════════════════════════════════
+     滚动：吸顶、定位条、回到顶部
+     ══════════════════════════════════════════════════════════════ */
   var nav = $("nav"), fw = $("filtersWrap"), totop = $("totop"), ticking = false;
   function onScroll() {
     var y = window.scrollY || window.pageYOffset;
@@ -1386,12 +2536,12 @@
     totop.classList.toggle("show", y > 460);
     var max = document.documentElement.scrollHeight - window.innerHeight;
     totop.style.setProperty("--progress", (max > 0 ? Math.min(y / max, 1) : 0).toFixed(3));
+    updateLocator();
     ticking = false;
   }
   window.addEventListener("scroll", function () {
     if (!ticking) { ticking = true; requestAnimationFrame(onScroll); }
   }, { passive: true });
-  onScroll();
   totop.addEventListener("click", function () {
     window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
   });
@@ -1403,179 +2553,91 @@
       if (hero) hero.style.opacity = String(Math.max(1 - y / 560, 0));
     }, { passive: true });
   }
-  (function revealHero() {
-    var els = document.querySelectorAll(".hero .reveal");
-    if (reduceMotion) { els.forEach(function (el) { el.classList.add("in"); }); return; }
-    els.forEach(function (el, i) { setTimeout(function () { el.classList.add("in"); }, 70 + i * 105); });
-  })();
-  function forceRevealAll() {
-    document.querySelectorAll("main section.reveal:not(.in)").forEach(function (s) { s.classList.add("in"); });
-  }
-  setTimeout(forceRevealAll, 1200);
-  window.addEventListener("load", function () { setTimeout(forceRevealAll, 600); });
 
-  /* ══════════════ 弹窗（编辑 / 重命名 / 确认） ══════════════ */
-  var mask = $("mask"), iName = $("iName"), iUrl = $("iUrl"), iDesc = $("iDesc"), iTags = $("iTags");
-  var modalOpen = false, modalMode = "link", modalCat = null, modalIdx = -1, catIdx = -1, confirmCb = null;
+  /* 定位条：滚动中显示「当前正在看哪个分组」
+     取最接近吸顶线的那一个。只判断「跨越吸顶线」是不够的：
+     页面滚到底时，靠后的分组可能整段都在视口内却永远越不过吸顶线，
+     那样定位条会一直停在倒数第二个分组。 */
+  function updateLocator() {
+    var loc = $("locator");
+    if (editing) { loc.classList.remove("show"); return; }
 
-  function showModal(title) {
-    modalOpen = true;
-    $("mTitle").textContent = title;
-    mask.classList.add("show");
-    document.body.classList.add("no-scroll");
-    setTimeout(function () { iName.focus(); if (iName.select) iName.select(); }, 60);
-  }
-  function closeModal() {
-    modalOpen = false;
-    confirmCb = null;
-    mask.classList.remove("show");
-    document.body.classList.remove("no-scroll");
-    $("fName").classList.remove("bad");
-    $("fUrl").classList.remove("bad");
-  }
-  $("mClose").addEventListener("click", closeModal);
-  mask.addEventListener("click", function (e) { if (e.target === mask) closeModal(); });
-
-  function openLinkModal(catName, idx) {
-    modalMode = "link"; modalCat = catName; modalIdx = idx; confirmCb = null;
-    var cat = catByName(catName);
-    var link = (idx >= 0 && cat) ? cat.links[idx] : null;
-    $("fUrl").style.display = "";
-    $("fDesc").closest(".field").style.display = "";
-    $("fTags").closest(".field").style.display = "";
-    $("mDelete").style.display = idx >= 0 ? "" : "none";
-    $("mSave").textContent = "保存";
-    $("lName").textContent = "名称";
-    $("lUrl").textContent = "网址";
-    iName.value = link ? (link.name || "") : "";
-    iUrl.value = link ? (link.url || "") : "https://";
-    iDesc.value = (link && link.desc) ? link.desc : "";
-    iTags.value = (link && Array.isArray(link.tags)) ? link.tags.join(", ") : "";
-    showModal(idx >= 0 ? "编辑站点" : "添加站点");
-  }
-  function openCatModal(ci) {
-    modalMode = "cat"; catIdx = ci; confirmCb = null;
-    $("fUrl").style.display = "none";
-    $("fDesc").closest(".field").style.display = "none";
-    $("fTags").closest(".field").style.display = "none";
-    $("mDelete").style.display = "none";
-    $("mSave").textContent = "保存";
-    $("lName").textContent = "分类名称";
-    iName.value = ci >= 0 ? DATA.categories[ci].name : "";
-    showModal(ci >= 0 ? "重命名分类" : "添加分类");
-  }
-  function askConfirm(title, msg, cta, cb) {
-    modalMode = "confirm"; confirmCb = cb;
-    $("fUrl").style.display = "none";
-    $("fDesc").closest(".field").style.display = "none";
-    $("fTags").closest(".field").style.display = "none";
-    $("fName").classList.remove("bad");
-    $("fName").querySelector(".err").textContent = "";
-    $("lName").textContent = "确认";
-    iName.value = msg;
-    iName.readOnly = true;
-    $("mDelete").style.display = "none";
-    $("mSave").textContent = cta || "确定";
-    showModal(title);
-  }
-
-  $("mSave").addEventListener("click", function () {
-    if (modalMode === "confirm") {
-      var cb = confirmCb;
-      closeModal();
-      if (cb) cb();
-      return;
-    }
-
-    var name = iName.value.trim();
-    if (!name) { $("fName").classList.add("bad"); iName.focus(); return; }
-    $("fName").classList.remove("bad");
-
-    if (modalMode === "cat") {
-      var dup = DATA.categories.some(function (c, i) {
-        return c.name === name && i !== catIdx;
-      });
-      if (dup) { toast("已存在同名分类", "err"); return; }
-      if (catIdx >= 0) {
-        var old = DATA.categories[catIdx].name;
-        DATA.categories[catIdx].name = name;
-        if (activeCat === old) activeCat = name;
-        persist(); closeModal(); render(); toast("已重命名");
-      } else {
-        DATA.categories.push({ name: name, links: [] });
-        persist(); closeModal(); render(); toast("已添加分类「" + name + "」");
-      }
-      return;
-    }
-
-    /* 链接 */
-    var url = iUrl.value.trim();
-    if (!/^https?:\/\/[^\s]+$/i.test(url)) { $("fUrl").classList.add("bad"); iUrl.focus(); return; }
-    $("fUrl").classList.remove("bad");
-    var cat = catByName(modalCat);
-    if (!cat) { toast("分类不存在", "err"); return; }
-    var tags = iTags.value.split(/[,，]/).map(function (s) { return s.trim(); }).filter(Boolean);
-
-    if (modalIdx >= 0) {
-      var link = cat.links[modalIdx];
-      link.name = name; link.url = url; link.desc = iDesc.value.trim();
-      if (tags.length) link.tags = tags; else delete link.tags;
-      persist(); closeModal(); render(); toast("已保存「" + name + "」");
-    } else {
-      var item = { name: name, url: url };
-      var d = iDesc.value.trim();
-      if (d) item.desc = d;
-      if (tags.length) item.tags = tags;
-      cat.links.push(item);
-      persist(); closeModal(); render(); toast("已添加「" + name + "」");
-    }
-  });
-
-  $("mDelete").addEventListener("click", function () {
-    if (modalMode !== "link" || modalIdx < 0) return;
-    var cat = catByName(modalCat);
-    if (!cat) return;
-    var label = cat.links[modalIdx].name || cat.links[modalIdx].url;
-    closeModal();
-    askConfirm("删除站点", "确定删除「" + label + "」？", "删除", function () {
-      cat.links.splice(modalIdx, 1);
-      persist(); render(); toast("已删除「" + label + "」");
+    var LINE = 110;
+    var cur = null, bestDist = Infinity;
+    Array.prototype.forEach.call(mainEl.querySelectorAll("section:not(.hide)"), function (s) {
+      var r = s.getBoundingClientRect();
+      if (r.height === 0) return;                 /* 空分组不参与 */
+      if (r.top > window.innerHeight) return;     /* 还没出现在视口里 */
+      if (r.bottom <= LINE) return;               /* 已经完全滚过吸顶线 */
+      var dist = Math.abs(r.top - LINE);
+      if (dist < bestDist) { bestDist = dist; cur = s; }
     });
-  });
 
-  document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape") {
-      if (modalOpen) { closeModal(); return; }
-      if (document.activeElement === qEl) { qEl.value = ""; query = ""; applyFilter(); qEl.blur(); return; }
-      if (editing) setEditing(false);
-      return;
-    }
-    if (e.key === "/" && !modalOpen && document.activeElement !== qEl) {
-      e.preventDefault(); qEl.focus(); qEl.select();
-    }
-    if (e.key === "Enter" && modalOpen && modalMode !== "confirm") {
-      if (document.activeElement && document.activeElement.tagName === "INPUT") {
-        e.preventDefault(); $("mSave").click();
-      }
-    }
-    if (e.key === "Enter" && modalOpen && modalMode === "confirm") {
-      e.preventDefault(); $("mSave").click();
-    }
-  });
+    if (!cur) { loc.classList.remove("show"); return; }
+    $("locatorText").textContent = cur.dataset.cat === pinnedCat ? "常用" : cur.dataset.cat;
+    loc.classList.add("show");
+  }
 
-  /* ══════════════ 编辑模式 ══════════════ */
+  /* 分类跳转面板 */
+  function openJump() {
+    var panel = $("jumpPanel");
+    panel.innerHTML = "";
+    var pinnedEntries = collectByUrls(UI.starred);
+    if (pinnedEntries.length) {
+      panel.appendChild(jumpItem("常用（收藏）", pinnedCat, pinnedEntries.length));
+    }
+    DATA.categories.forEach(function (c, i) {
+      var n = c.links.filter(function (l) { return UI.hidden.indexOf(l.url) === -1; }).length;
+      panel.appendChild(jumpItem(c.name, c.name, n));
+    });
+    $("jump").classList.add("show");
+  }
+  function jumpItem(label, value, count) {
+    var b = mk("button", "jump-item" + (value === activeCat ? " cur" : ""));
+    b.type = "button";
+    b.appendChild(mk("span", null, label));
+    b.appendChild(mk("span", "cnt", String(count)));
+    b.addEventListener("click", function () {
+      closeJump();
+      var id = value === pinnedCat ? "c-" + pinnedCat : "c-" + value;
+      var target = document.getElementById(id);
+      if (!target) return;
+      if (value !== pinnedCat) setCat(value);
+      requestAnimationFrame(function () {
+        target.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+      });
+    });
+    return b;
+  }
+  function closeJump() { $("jump").classList.remove("show"); }
+  $("jump").addEventListener("click", function (e) { if (e.target === $("jump")) closeJump(); });
+  $("locator").addEventListener("click", openJump);
+  $("kbdHelp").addEventListener("click", openKbdHelp);
+
+  /* ══════════════════════════════════════════════════════════════
+     视图切换
+     ══════════════════════════════════════════════════════════════ */
+  function setView(v) {
+    UI.view = v; saveUI();
+    document.body.classList.toggle("view-list", v === "list");
+    $("viewGrid").setAttribute("aria-pressed", String(v === "grid"));
+    $("viewList").setAttribute("aria-pressed", String(v === "list"));
+  }
+  $("viewGrid").addEventListener("click", function () { setView("grid"); });
+  $("viewList").addEventListener("click", function () { setView("list"); });
+
+  /* ══════════════════════════════════════════════════════════════
+     编辑模式
+     ══════════════════════════════════════════════════════════════ */
   function setEditing(on) {
     if (on === editing) return;
     editing = on;
     document.body.classList.toggle("editing", on);
     $("editToggle").setAttribute("aria-pressed", String(on));
-    /* 筛选条在编辑态收起：编辑需要看到全部，否则会误以为站点丢了 */
     $("filtersWrap").style.display = on ? "none" : "";
     if (on) {
-      activeCat = "all";
-      writeHash("", "");
-      applyFilter();
-      syncDraggable();   /* 进入编辑态必须刷新 draggable，否则手柄可见但不能拖 */
+      activeCat = "all"; writeHash("", "");
+      clearKbFocus(); applyFilter(); syncDraggable(); updateLocator();
       toast("编辑模式：可新增、修改、拖拽排序");
     } else {
       render();
@@ -1584,42 +2646,87 @@
   }
   $("editToggle").addEventListener("click", function () { setEditing(!editing); });
 
-  /* ══════════════ 导出 / 恢复 ══════════════ */
+  /* 悬浮「添加站点」：先问加到哪个分类 */
+  $("fab").addEventListener("click", function () {
+    openModal("添加到哪个分类？", function (body, foot) {
+      DATA.categories.forEach(function (c) {
+        var b = mk("button", "jump-item");
+        b.type = "button";
+        b.appendChild(mk("span", null, c.name));
+        b.appendChild(mk("span", "cnt", c.links.length + " 个"));
+        b.addEventListener("click", function () { closeModal(); setTimeout(function () { openLinkModal(c.name, -1); }, 60); });
+        body.appendChild(b);
+      });
+      var nb = btn("新建分类", "primary", PATH.plus);
+      nb.addEventListener("click", function () { closeModal(); setTimeout(function () { openCatModal(-1); }, 60); });
+      foot.appendChild(nb);
+      var bb = btn("批量导入当前首个分类", "ghost", PATH.download);
+      bb.style.display = DATA.categories.length ? "" : "none";
+      bb.addEventListener("click", function () {
+        closeModal();
+        setTimeout(function () { openBatchModal(DATA.categories[0].name); }, 60);
+      });
+      foot.insertBefore(bb, nb);
+    });
+  });
+
+  /* 顶部提示条 */
+  function updateDirtyBar() {
+    var has = document.body.classList.contains("has-local");
+    if (!has) return;
+    var t = $("dirtyText");
+    t.innerHTML = GH.token
+      ? "本机改动尚未提交到 GitHub。点「提交到 GitHub」即写回仓库，之后所有设备可见。"
+      : "当前显示的是<strong>本机编辑</strong>的内容，仅保存在这台设备。连接 GitHub 后可一键提交到线上。";
+    $("btnPushText").textContent = GH.token ? "提交到 GitHub" : "连接 GitHub";
+  }
+  $("btnPush").addEventListener("click", function () { pushToGitHub(); });
+
+  /* ══════════════════════════════════════════════════════════════
+     导出 / 恢复
+     ══════════════════════════════════════════════════════════════ */
+  function exportPayload() {
+    /* 收藏与隐藏随导出一起走，换设备后偏好不丢 */
+    var out = { title: DATA.title, subtitle: DATA.subtitle, categories: DATA.categories };
+    if (UI.starred.length) out.starred = UI.starred;
+    return out;
+  }
   function exportJSON() {
-    var text = JSON.stringify({ title: DATA.title, subtitle: DATA.subtitle, categories: DATA.categories }, null, 2) + "\n";
-    var blob = new Blob([text], { type: "application/json;charset=utf-8" });
+    var blob = new Blob([JSON.stringify(exportPayload(), null, 2) + "\n"], { type: "application/json;charset=utf-8" });
     var url = URL.createObjectURL(blob);
-    var a = document.createElement("a");
-    a.href = url; a.download = "links.json";
+    var a = mk("a"); a.href = url; a.download = "links.json";
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(function () { URL.revokeObjectURL(url); }, 3000);
-    toast("已导出 links.json，替换仓库文件即可持久化");
+    toast(UI.starred.length ? "已导出（含 " + UI.starred.length + " 个收藏）" : "已导出 links.json");
   }
   $("btnExport2").addEventListener("click", exportJSON);
   $("btnReset2").addEventListener("click", function () {
-    askConfirm("恢复线上版本", "将丢弃本机所有编辑，恢复为线上 links.json 的内容？", "恢复", function () {
+    askConfirm("恢复线上版本", "将丢弃本机的编辑内容与偏好设置，恢复为线上 links.json。", "恢复", function () {
       dropLocal();
+      UI = { starred: [], recent: [], view: UI.view, hidden: [] };
       DATA = clone(BASE);
       activeCat = "all";
-      render();
+      render(); updateDirtyBar();
       toast("已恢复线上版本");
     });
   });
 
-  /* ══════════════ 拖拽排序 ══════════════ */
+  /* ══════════════════════════════════════════════════════════════
+     拖拽排序（鼠标）。触屏用卡片上的上/下移按钮。
+     ══════════════════════════════════════════════════════════════ */
   var dragCard = null, dragSec = null;
-
+  function syncDraggable() {
+    mainEl.querySelectorAll("a.card").forEach(function (c) { c.draggable = editing && !isTouch(); });
+    mainEl.querySelectorAll("section").forEach(function (s) { s.draggable = editing && !isTouch(); });
+    document.body.classList.toggle("on-touch", editing && isTouch());
+  }
   function clearDropMarks() {
-    mainEl.querySelectorAll(".drop-before,.drop-after").forEach(function (el) {
-      el.classList.remove("drop-before", "drop-after");
-    });
+    mainEl.querySelectorAll(".drop-before,.drop-after").forEach(function (n) { n.classList.remove("drop-before", "drop-after"); });
     mainEl.querySelectorAll("section.drop-target").forEach(function (s) { s.classList.remove("drop-target"); });
   }
-
   mainEl.addEventListener("dragstart", function (e) {
     if (!editing) { e.preventDefault(); return; }
-    var card = e.target.closest("a.card");
-    var sec = e.target.closest("section");
+    var card = e.target.closest("a.card"), sec = e.target.closest("section");
     if (card) { dragCard = card; card.classList.add("dragging"); }
     else if (sec) { dragSec = sec; sec.classList.add("dragging"); }
   });
@@ -1640,7 +2747,7 @@
       return;
     }
     var s = e.target.closest("section");
-    if (dragSec && s && s !== dragSec) {
+    if (dragSec && s && s !== dragSec && s.dataset.pinned !== "1") {
       clearDropMarks();
       s.classList.add("drop-target");
     }
@@ -1648,13 +2755,11 @@
   mainEl.addEventListener("drop", function (e) {
     if (!editing) return;
     e.preventDefault();
-
     if (dragSec) {
       var targetSec = e.target.closest("section");
-      if (targetSec && targetSec !== dragSec) {
+      if (targetSec && targetSec !== dragSec && targetSec.dataset.pinned !== "1") {
         var names = DATA.categories.map(function (c) { return c.name; });
-        var from = names.indexOf(dragSec.dataset.cat);
-        var to = names.indexOf(targetSec.dataset.cat);
+        var from = names.indexOf(dragSec.dataset.cat), to = names.indexOf(targetSec.dataset.cat);
         if (from > -1 && to > -1) {
           var moved = DATA.categories.splice(from, 1)[0];
           DATA.categories.splice(to, 0, moved);
@@ -1663,19 +2768,15 @@
       }
       return;
     }
-
     var t = e.target.closest("a.card");
     if (!dragCard || !t || t === dragCard) return;
     var fromGrid = dragCard.closest(".grid"), toGrid = t.closest(".grid");
     if (!fromGrid || !toGrid) return;
-    var fromCat = catByName(fromGrid.dataset.cat);
-    var toCat = catByName(toGrid.dataset.cat);
+    var fromCat = catByName(fromGrid.dataset.cat), toCat = catByName(toGrid.dataset.cat);
     if (!fromCat || !toCat) return;
-
     var fromIdx = Array.prototype.indexOf.call(fromGrid.querySelectorAll("a.card"), dragCard);
     var toIdx = Array.prototype.indexOf.call(toGrid.querySelectorAll("a.card"), t);
     if (fromIdx < 0 || toIdx < 0) return;
-
     var rect = t.getBoundingClientRect();
     var after = e.clientX >= rect.left + rect.width / 2;
     var movedLink = fromCat.links.splice(fromIdx, 1)[0];
@@ -1685,15 +2786,9 @@
     persist(); render(); toast("已移动「" + (movedLink.name || movedLink.url) + "」");
   });
 
-  /* 卡片与分组可拖由 draggable 属性控制，随编辑态同步 */
-  function syncDraggable() {
-    mainEl.querySelectorAll("a.card").forEach(function (c) { c.draggable = editing; });
-    mainEl.querySelectorAll("section").forEach(function (s) { s.draggable = editing; });
-  }
-  var baseRender = render;
-  render = function () { baseRender(); syncDraggable(); };
-
-  /* ══════════════ 启动 ══════════════ */
+  /* ══════════════════════════════════════════════════════════════
+     启动
+     ══════════════════════════════════════════════════════════════ */
   (function initHash() {
     var h = readHash();
     if (!h) return;
@@ -1701,9 +2796,22 @@
     else if (h.value) activeCat = h.value;
   })();
 
+  loadUI();
+  loadGH();
+  setView(UI.view);
+  updateGhBadge();
+  document.body.classList.toggle("has-local", !!loadLocal());
+
+  /* 滚动时更新筛选条渐隐 */
+  filtersEl.addEventListener("scroll", updateFilterFade, { passive: true });
+  window.addEventListener("resize", function () { updateFilterFade(); syncDraggable(); });
+  window.addEventListener("beforeunload", saveIconCache);
+
   function applyData(base) {
     BASE = clone(base);
-    var local = readLocal();
+    if (base.repo) REPO = Object.assign(clone(DEFAULT_REPO), base.repo);
+    AUTH = base.auth || null;
+    var local = loadLocal();
     if (local) {
       DATA = local;
       document.body.classList.add("has-local");
@@ -1711,45 +2819,62 @@
       DATA = clone(base);
       document.body.classList.remove("has-local");
     }
+    if (Array.isArray(base.starred)) {
+      /* 线上带了收藏定义时合并进本机偏好（并集） */
+      base.starred.forEach(function (u) { if (UI.starred.indexOf(u) === -1) UI.starred.push(u); });
+      saveUI();
+    }
     render();
+    updateDirtyBar();
   }
 
-  fetch("links.json", { cache: "no-cache" })
-    .then(function (r) {
-      if (!r.ok) throw new Error("HTTP " + r.status);
-      return r.json();
-    })
-    .then(function (json) {
-      applyData((json && Array.isArray(json.categories)) ? json : { title: "壹页", subtitle: "", categories: [] });
-    })
-    .catch(function (err) {
-      /* 线上读不到时，本机编辑内容仍可用 —— 不让用户彻底失去数据 */
-      var local = readLocal();
-      if (local) {
-        DATA = local;
-        document.body.classList.add("has-local");
-        render();
-        toast("线上数据读取失败，正在显示本机编辑内容", "err");
-        return;
-      }
-      var skel = $("skeleton");
-      if (skel) skel.remove();
-      mainEl.innerHTML = '<div class="empty show" style="display:block">' +
-        '<h3>数据加载失败</h3>' +
-        '<p>无法读取 <code>links.json</code>（' + esc(err.message) + '）。<br>' +
-        '若你是直接双击打开 HTML 文件，请改用本地服务器预览；' +
-        '也可以点右上角「编辑」从零添加站点。</p></div>';
-    });
+  /* OAuth 回调优先处理（会清掉 URL 里的 code） */
+  handleOAuthCallback().then(function (handled) {
+    fetch("links.json", { cache: "no-cache" })
+      .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+      .then(function (json) {
+        applyData((json && Array.isArray(json.categories)) ? json : { title: "壹页", subtitle: "", categories: [] });
+      })
+      .catch(function (err) {
+        var local = loadLocal();
+        if (local) {
+          DATA = local;
+          document.body.classList.add("has-local");
+          render(); updateDirtyBar();
+          toast("线上数据读取失败，正在显示本机编辑内容", "err");
+          return;
+        }
+        var skel = $("skeleton");
+        if (skel) skel.remove();
+        mainEl.innerHTML = '<div class="empty show" style="display:block">' +
+          '<h3>数据加载失败</h3><p>无法读取 <code>links.json</code>（' + esc(err.message) + '）。<br>' +
+          '若你是直接双击打开 HTML 文件，请改用本地服务器预览；也可以点右上角「编辑」从零添加站点。</p></div>';
+      });
+  });
 
-  /* 供自动化测试与调试使用 */
-  window.__yiyiPage = {
+  /* 供自动化测试使用 */
+  window.__page = {
     get data() { return DATA; },
     get base() { return BASE; },
+    get ui() { return UI; },
     get editing() { return editing; },
+    get gh() { return GH; },
+    get repo() { return REPO; },
+    exportText: function () { return JSON.stringify(exportPayload(), null, 2); },
     setEditing: setEditing,
-    exportText: function () {
-      return JSON.stringify({ title: DATA.title, subtitle: DATA.subtitle, categories: DATA.categories }, null, 2);
-    }
+    setToken: function (t, login, method) { GH = { token: t, login: login || "", method: method || "pat" }; saveGH(); updateGhBadge(); },
+    push: pushToGitHub
+  };
+
+  /* 自动化测试与排障用的额外钩子，与上面的只读接口分开，避免污染正常 API */
+  window.__pageTest = {
+    get kbIndex() { return kbIndex; },
+    focusCard: focusCard,
+    openJump: openJump,
+    openGhModal: openGhModal,
+    statsCount: function () { return document.querySelectorAll("#stats .item").length; },
+    locatorText: function () { return $("locatorText").textContent; },
+    updateLocator: updateLocator
   };
 })();
 
